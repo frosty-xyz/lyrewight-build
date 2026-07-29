@@ -1,0 +1,56 @@
+name: Build Desktop Apps
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # --- MAC BUILD JOB ---
+  build-mac:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build Mac App
+      run: npm run build-mac -- --publish never
+
+    - name: Upload Mac Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: lyre-wight-mac-build
+        path: dist/*.dmg
+
+  # --- LINUX BUILD JOB ---
+  build-linux:
+    runs-on: ubuntu-latest  # Runs on a clean Linux virtual environment
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build Linux App
+      run: npm run build-linux -- --publish never  # Calls your package.json script
+
+    - name: Upload Linux Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: lyre-wight-linux-build
+        path: dist/*.AppImage  # Captures the portable AppImage file
