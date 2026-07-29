@@ -1,0 +1,821 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>	
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">	
+    <!-- 🌟 UPDATED: Added 'data:' and 'blob:' to allow images and workers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; worker-src 'self' blob:;">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- 🌟 NEW: iOS Web App Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- Favicon (Browser Tab) -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png">
+
+    <!-- iOS Home Screen Icon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
+
+    <!-- Android PWA Manifest -->
+    <link rel="manifest" href="manifest.json">	
+	
+    <title>Curse of the Lyre-Wight</title>
+</head>
+<body onload="document.getElementById('game-container').style.display = 'flex';">
+
+
+<!-- 🌟 WELCOME / START SCREEN 🌟 -->
+<div id="start-screen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 9999; display: flex; justify-content: center; align-items: center;">
+    <div class="scalable-modal" style="
+        position: relative;
+        background-image: url('assets/start_screen.webp'); 
+        background-size: 100% 100%; 
+        background-repeat: no-repeat; 
+        width: 810px; 
+        height: 810px; 
+        border: 6px solid #332211; 
+        box-shadow: 10px 10px 20px rgba(0,0,0,0.8); 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: flex-end; 
+        align-items: center; 
+        padding-bottom: 30px; 
+        border-radius: 4px;
+        box-sizing: border-box;">
+
+        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 20px;">
+            <button id="btn-start-game" disabled style="width: 250px; height: 50px; background: #44aa44; color: #fff; border-color: #006600; border-width: 4px; border-style: solid; font-weight: bold; cursor: pointer;">Loading...</button>
+            <button id="btn-start-guild" disabled style="width: 250px; height: 50px; background: #88aa44; color: #fff; border-color: #446600; border-width: 4px; border-style: solid; font-weight: bold; cursor: pointer;">Loading...</button>
+            <button id="btn-load-game" style="width: 250px; height: 50px; background: #225588; color: #fff; border-color: #113366; border-width: 4px; border-style: solid; font-weight: bold; cursor: pointer;">Load Game</button>
+            <input type="file" id="load-file-input" accept=".json" style="display: none;">
+
+            <!-- 🌟 NEW: Full Screen Button -->
+            <button id="btn-start-fullscreen" style="width: 250px; height: 50px; background: #555; color: #fff; border-color: #333; border-width: 4px; border-style: solid; font-weight: bold; cursor: pointer;">📺 Full Screen</button>
+        </div>
+
+        <!-- 🌟 Version Tag: Positioned inside the container -->
+        <span id="start-version-tag" style="
+            position: absolute; 
+            bottom: 5px; 
+            right: 10px; 
+            color: #969696; 
+            font-size: 0.8rem; 
+            font-family: sans-serif; 
+			font-weight: bold;
+            pointer-events: none;">
+        </span>
+    </div>
+</div>
+
+
+<!-- 🌟 INTRO SCREEN 🌟 -->
+<div id="intro-screen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; font-family: 'Georgia', serif; cursor: pointer;">
+    <div id="intro-bg-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0; transition: opacity 1.5s ease-in-out;">
+        <div id="intro-bg" style="width: 100%; height: 100%; background-size: cover; background-position: center; background-repeat: no-repeat;"></div>
+    </div>
+
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 100%); z-index: 2;"></div>
+
+    <div id="intro-text" style="position: relative; z-index: 3; color: #e8dcc4; font-size: 2.2rem; text-align: center; max-width: 75%; text-shadow: 2px 2px 6px #000; opacity: 0; transition: opacity 1s ease-in-out;">
+    </div>
+
+    <button id="btn-skip-intro" style="position: absolute; bottom: 30px; right: 30px; z-index: 4; width: 150px; height: 50px; background: rgba(0,0,0,0.5); color: #fff; border: 2px solid #555; font-size: 1.1rem; cursor: pointer;">Skip Intro</button>
+</div>
+
+<!-- 🌟 GAME OVER SCREEN 🌟 -->
+<div id="game-over-screen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; font-family: 'Georgia', serif;">
+    <div class="scalable-modal" style="background: #e8dcc4; background-image: url('assets/parchment.webp'); background-size: 128px; border: 6px solid #332211; padding: 40px; text-align: center; box-shadow: inset 0 0 50px rgba(139, 69, 19, 0.4), 10px 10px 20px rgba(0,0,0,0.8); border-radius: 4px; max-width: 600px; width: 100%;">
+        <h1 style="margin: 0 0 10px 0; font-size: 3.5rem; color: #5a2e0e; text-shadow: 1px 1px 0px rgba(255,255,255,0.5); line-height: 1.1;">Game Over</h1>
+        <div style="font-size: 1.2rem; color: #444; margin-bottom: 30px; font-style: italic; font-weight: bold;">Restart game</div>
+
+        <button id="btn-restart-game" style="width: 250px; height: 60px; margin: 0 auto; background: #8b0000; color: #fff; border-color: #440000;">Restart</button>
+    </div>
+</div>
+
+<div id="game-container" style="display:none;">
+    
+    <!-- THE MAIN UI BACKGROUND -->
+    <div id="ui-background">
+        
+        <!-- 1. TOP-LEFT BOTTOM LAYER (z-index: -1). Sits BEHIND the jagged frame! -->
+        <div id="zone-tl" class="ui-zone">
+            <!-- Background #000 ensures that if a screen is shorter than the box, it's just black void -->
+            <div id="main-view-wrapper" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100%; position: relative; background: #000;">
+                
+                <div id="canvas-container" style="height:100%; display:flex; justify-content:center; align-items:center;">                    
+                    <canvas id="view-canvas" width="1920" height="854" style="width:100%; height:100%; object-fit:fill;"></canvas>
+                </div>
+                
+                <!-- Added background:#000 back to the screens -->
+                <div id="pre-combat-view" style="display:none; flex-direction:column; padding:15px; flex:1; justify-content:center; align-items:center; height:100%; box-sizing:border-box; background:#000;">
+                    <div id="pre-combat-portrait" style="width: 100%; max-width: 400px; flex: 1; min-height: 0; margin-bottom: 4px;"></div>
+                    <div id="pre-combat-text" style="color: #fada5e; font-family: 'Georgia', serif; font-size: 1.5rem; font-weight: bold; text-align: center; padding: 10px; flex-shrink: 0;">Enemy Spotted!</div>
+                    <div style="display:flex; gap:10px; width:100%; max-width:400px; margin-top:5px; margin-bottom:10px; height: 50px; flex-shrink: 0;">
+                        <button id="btn-pre-flee" style="flex:1;">🏃‍♂️ Avoid</button>
+                        <button id="btn-start-combat" style="flex:1;">⚔️ Engage</button>
+                    </div>
+                </div>
+
+                <div id="encounter-view" style="display:none; flex-direction:column; height:100%; background:#000;">
+                    <div id="enemy-header" style="display: none; text-align: center; padding-top: 20px; padding-bottom: 5px;">
+                        <div id="encounter-name" style="font-size: 1.2rem; color: #fada5e; font-weight: bold;">Encounter!</div>
+                    </div>
+                    <div id="battlefield" style="flex:1; display:flex; flex-direction:column; background: #050505; min-height: 0;">
+                        <div id="enemy-zone" style="flex: 2; position: relative; display: flex; justify-content: center; align-items: flex-end; gap: 10px; flex-wrap: wrap; padding-top: 80px; min-height: 0;"></div>
+
+                        <div id="party-zone" style="flex: 1.5; display: flex; justify-content: center; align-items: flex-end; gap: 15px; flex-wrap: wrap; padding-bottom: 30px; min-height: 0;">
+							<!-- Party injected here dynamically -->
+						</div>
+                    </div>
+                </div>
+
+                <div id="victory-screen" style="display:none; height:100%; justify-content:center; align-items:center; flex-direction:column; background:#000;">
+                    <div id="victory-portrait" style="width: 256px; height: 256px;"></div>
+                    <div id="victory-text" style="text-align:center; padding: 10px;">
+                        <h2 style="color:#fada5e; font-family:'Georgia', serif; font-size:2.5rem; margin: 10px 0;">Victory!</h2>
+                        <div id="victory-loot" style="color:#fff; font-weight:bold; font-size:1.1rem;">Found 0 Gold. Party gains 0 XP!</div>
+                        <button id="btn-victory-continue" style="margin: 20px auto 0 auto; width: 200px; height: 50px;">Continue</button>
+                    </div>
+                </div>								
+            </div>
+        </div>
+
+        <!-- PARTY EFFECTS: Sits directly in the UI background so it renders IN FRONT of the frame! -->
+        <div id="party-effects-col" class="ui-zone" style="top:5%; right:39.5%; width:50px; height:45%; z-index:1; display:flex; flex-direction:column; align-items:center; padding:4px 0; gap:6px; overflow-y:auto;"></div>
+		
+        <!-- 2. BOTTOM-LEFT: Roster -->
+        <div id="zone-bl" class="ui-zone" style="overflow-y: auto;">
+            <div id="party-list"></div>
+        </div>
+		
+		<!-- NEW: MIDDLE-LEFT: Location Banner -->
+        <div id="zone-loc" class="ui-zone" style="display:flex; justify-content:center; align-items:center;">
+            <div id="location-text" style="color:#221100; font-family:'Georgia', serif; font-weight:bold; font-size:1.2rem; text-shadow: 1px 1px 0px rgba(255,255,255,0.4); margin-top: -4px;">
+                Barrowtown Vaults <span id="loc-level" style="color:#5a2e0e;">(Lvl 1)</span>
+            </div>
+            <!-- Version Tag moved to bottom right of screen so it doesn't clutter the banner -->
+            <span id="ui-version-tag" style="position:fixed; right:5px; bottom: 2px; font-size:0.7rem; color:#666;"></span>
+        </div>
+
+		<!-- 3. TOP-RIGHT: Minimap -->
+        <div id="zone-tr" class="ui-zone" style="display: flex; flex-direction: column; padding: 15px 25px 15px 15px; box-sizing: border-box;">
+            <div id="minimap-panel" style="flex:1; display:flex; flex-direction:row; align-items: center; gap: 10px; height: 100%;">
+                
+                <!-- The Canvas (Left) -->
+                <canvas id="minimap-canvas" width="300" height="300" style="height:100%; aspect-ratio: 1/1; object-fit:contain; border: 2px solid #5a2e0e; border-radius: 4px; background:transparent;"></canvas>
+                
+                <!-- The Legend (Middle) -->
+                <div id="minimap-legend-box" class="minimap-legend" style="flex:1; display:flex; flex-direction:column; justify-content: center; gap: 4px; font-size: 0.8rem; overflow-y: auto; height: 100%;"></div>
+
+               <!-- 🔍 Zoom Controls (Right) -->
+                <div style="display:flex; flex-direction:column; gap:4px; justify-content:center; flex: 0 0 32%;">
+					<!-- 🧪 DEBUG COORDINATES -->
+					<div id="debug-coords" style="display:none; font-family:monospace; font-size:0.8rem; text-align:center; color:#5a2e0e; font-weight:bold; background:rgba(255,255,255,0.3); border-radius:3px; padding:2px;">X: 0, Y: 0</div>
+
+					<div style="display:flex; gap:4px;">
+						<button id="btn-mm-zoom-in" style="flex:1;">+</button>
+						<button id="btn-mm-zoom-out" style="flex:1;">-</button>
+					</div>
+					<button id="btn-mm-full" style="width: 100%; aspect-ratio: 4.2 / 1; flex: 0 0 auto; font-size: 1.1rem;">Map</button>
+					<button id="btn-options" style="width: 100%; aspect-ratio: 4.2 / 1; flex: 0 0 auto; font-size: 1.1rem;">Options</button>
+				</div>			   
+            </div>
+        </div>
+	
+        <!-- 4. MIDDLE-RIGHT: Message Log -->
+        <div id="zone-mr" class="ui-zone">
+            <div id="message-log" class="parchment-scroll" style="height:100%; box-sizing:border-box;"></div>
+        </div>
+
+        <!-- 5. BOTTOM-RIGHT: Controls -->
+        <div id="zone-br" class="ui-zone" style="display:flex; justify-content:center; align-items:center;">
+            
+            <div id="explore-panel" style="width:100%; height:100%;">
+                <div id="controls" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; height:100%; padding:4px; box-sizing:border-box;">
+                    <button id="btn-turn-left">↰</button>
+                    <button id="btn-forward">▲</button>
+                    <button id="btn-turn-right">↱</button>
+                    <button id="btn-interact" style="visibility: hidden;">🗝️</button>
+                    <button id="btn-backward">▼</button>
+                    <div class="btn-empty"></div>
+                </div>
+            </div>
+
+            <div id="combat-panel" style="display:none; width:100%; height:100%; flex-direction:column;">
+                <div id="combat-status" style="color:#fff; background:rgba(0,0,0,0.5); text-align:center; padding:4px; font-size:0.9rem;">Strategy Phase</div>
+                
+               <div id="combat-party-controls" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; padding: 4px; flex:1;">
+                    <button id="btn-party-fight">⚔️ Fight</button>
+                    <button id="btn-party-advance">🏃 Advance</button>
+                    <button id="btn-party-flee">🐔 Flee</button>
+                </div>
+
+                <!-- Standard Individual Controls -->
+                <div id="combat-individual-controls" style="display:none; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 2px; flex:1;">
+                    <button id="btn-c-attack">⚔️ Atk</button>
+                    <button id="btn-c-cast">✨ Cast</button>
+                    <button id="btn-c-item">🎒 Item</button>
+                    <button id="btn-c-defend">🛡️ Def</button>
+                </div>
+
+                <!-- NEW: The Spellbook Sub-Menu -->
+                <div id="combat-spell-menu" style="display:none; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 4px; padding: 4px; flex:1; overflow-y:auto;">
+                    <!-- Spell buttons inject here -->
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- ⚙️ OPTIONS MODAL ⚙️ -->
+<div id="options-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+    <div class="scalable-modal" style="background: #e8dcc4; background-image: url('assets/parchment.webp'); border: 6px solid #332211; border-radius: 4px; width: 100%; max-width: 400px; padding: 30px; text-align: center; font-family: 'Georgia', serif;">
+        <h2 style="margin: 0 0 20px 0; color: #5a2e0e;">Options</h2>
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="text-align: left; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 4px;">
+                <label style="font-weight: bold; color: #5a2e0e; display: block; margin-bottom: 10px;">Graphics Quality</label>
+                <select id="graphics-select" style="width: 100%; padding: 8px;">
+                    <option value="0">Ultra (1920x854)</option>
+                    <option value="1">High (1440x640)</option>
+                    <option value="2">Medium (1280x570)</option>
+                    <option value="3">Low (960x427)</option>
+                </select>
+            </div>
+            <div style="text-align: left; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 4px;">
+                <label style="font-weight: bold; color: #5a2e0e; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+                    Music Enabled
+                    <input type="checkbox" id="music-toggle" checked style="transform: scale(1.5);">
+                </label>
+                <label style="font-weight: bold; color: #5a2e0e; display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin-top: 10px;">
+                    Sound Effects Enabled
+                    <input type="checkbox" id="sfx-toggle" checked style="transform: scale(1.5);">
+                </label>
+            </div>
+
+            <!-- 🌟 NEW: Combat Speed Slider -->
+            <div style="text-align: left; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 4px;">
+                <label style="font-weight: bold; color: #5a2e0e; display: block; margin-bottom: 10px;">Combat Speed</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 0.8rem; color: #5a2e0e; font-weight: bold;">Slow</span>
+                    <input type="range" id="combat-speed-slider" min="0" max="200" value="100" style="flex: 1; cursor: pointer;">
+                    <span style="font-size: 0.8rem; color: #5a2e0e; font-weight: bold;">Fast</span>
+                </div>
+            </div>
+
+            <button id="btn-opts-save" style="width: 100%; height: 50px;">Save Game</button>
+            <button id="btn-opts-load" style="width: 100%; height: 50px;">Load Game</button>
+
+            <!-- 🌟 NEW: Full Screen Toggle Option -->
+            <button id="btn-opts-fullscreen" style="width: 100%; height: 50px; background: #555; color: #fff;">📺 Toggle Full Screen</button>
+            <button id="btn-opts-restart" style="width: 100%; height: 50px; background: #8b0000; color: #fff;">Restart Game</button>
+            <button id="btn-opts-close" style="width: 100%; height: 50px; background: #555; color: #fff;">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- 🔹 CHARACTER MODAL 🔹 -->
+<div id="char-modal" style="display: none;">
+    <div class="modal-box scalable-modal">
+		<div class="char-sheet">
+
+            <div class="sheet-header">
+                <h1 id="cs-name">NAME</h1>
+                <div id="cs-subtitle">Level 1 Race Class</div>
+            </div>
+            
+            <div class="sheet-body">
+                <!-- LEFT: Portrait and Stats -->
+                <div class="sheet-left">
+                    
+                    <!-- 🌟 NEW 3x3 GRID FOR PORTRAIT AND SLOTS 🌟 -->
+                    <div class="equip-grid-layout">
+                        <div id="cs-eq-ammo" class="eq-cell-center"></div> <!-- Ammo Slot (Top-Left) -->
+                        <div id="cs-eq-top" class="eq-cell-center"></div> <!-- Helmet -->
+                        <div></div> <!-- Empty Top-Right -->
+                        
+                        <div id="cs-eq-left" class="eq-cell-left"></div> <!-- Body & Weapon -->
+                        <div id="cs-portrait" class="portrait-main"><span>[ NO PORTRAIT ]</span></div>
+                        <div id="cs-eq-right" class="eq-cell-right"></div> <!-- Gloves & Offhand -->
+                        
+                        <!-- 🌟 NEW: Ring Slots! -->
+                        <div id="cs-eq-ring1" class="eq-cell-center"></div>
+                        <div id="cs-eq-bottom" class="eq-cell-center"></div>
+                        <div id="cs-eq-ring2" class="eq-cell-center"></div>
+                    </div>
+                    
+                    <div class="cs-section">
+                        <h3>STATS</h3>
+                        <div id="cs-stats" class="stat-grid"></div>						
+                    </div>
+                </div>
+                
+                <!-- RIGHT: Filtered Inventory -->
+                <div class="sheet-right">
+                    <div class="inv-tabs">
+                        <div class="inv-tab active" id="tab-All" onclick="setInvTab('All')">All</div>
+                        <div class="inv-tab" id="tab-Weapon" onclick="setInvTab('Weapon')">Weapons</div>
+                        <div class="inv-tab" id="tab-Armor" onclick="setInvTab('Armor')">Armor</div>
+						<div class="inv-tab" id="tab-Ammo" onclick="setInvTab('Ammo')">Ammo</div>                        
+						<div class="inv-tab" id="tab-Instrument" onclick="setInvTab('Instrument')">Instruments</div>
+						<div class="inv-tab" id="tab-Consumable" onclick="setInvTab('Consumable')">Items</div>
+						<div class="inv-tab" id="tab-Cards" onclick="setInvTab('Cards')">Cards</div>
+						<div class="inv-tab" id="tab-Quest" onclick="setInvTab('Quest')">Quest</div>
+                    </div>
+					<div id="sub-inv-tabs" class="inv-tabs" style="margin-top: 10px; display: none; background: rgba(0,0,0,0.05); padding: 5px; border-radius: 4px;">
+						<!-- Sub-tabs injected here dynamically -->
+					</div>
+                    <div class="inv-grid-wrapper">
+                        <div id="cs-inv" class="inv-grid"></div>
+                    </div>                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <button id="btn-explore-spellbook" onclick="window.openSpellbook('explore', activeModalCharIndex)" style="width: 220px; height: 45px; font-size: 1.1rem; display: none;">
+                            <span style="position: relative; top: -5px;">📖 Spellbook</span>
+                        </button>
+                        <div id="cs-gold" style="font-weight:bold; color:#8b6508; text-align:right; font-size:1.3rem;">Party Gold: 0</div>
+                    </div>
+                    
+                    <!-- 🌟 NEW: ACTIVE EFFECTS DASHBOARD -->
+                    <div id="cs-active-effects" style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; max-height: 140px; overflow-y: auto; padding-right: 5px;"></div>
+                </div>
+            </div> <!-- End of sheet-body -->
+
+            <!-- 🌟 REPLACED CLOSE BUTTON WITH NAVIGATION BAR -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; gap: 15px;">
+                <button id="btn-prev-char" style="width: 150px; height: 50px; background: #5a2e0e; color: #fff; border-color: #8b4513 #221100 #221100 #8b4513;">&#9664; Prev</button>
+                <button id="btn-close-modal" style="width: 250px; height: 50px; margin: 0; background: #8b4513; color: #fff; border-color: #d2b48c #4a2509 #4a2509 #d2b48c;">Close</button>
+                <button id="btn-next-char" style="width: 150px; height: 50px; background: #5a2e0e; color: #fff; border-color: #8b4513 #221100 #221100 #8b4513;">Next &#9654;</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- 🔍 GUILD INSPECTOR MODAL 🔍 -->
+<div id="guild-inspector-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 2500; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+    <div class="char-sheet scalable-modal" style="max-width: 480px; width: 100%; max-height: 972px;">
+
+        <div class="sheet-header">
+            <h1 id="gi-name" style="font-size: 2.2rem;">NAME</h1>
+            <div id="gi-subtitle" style="font-size: 1.2rem;">Level 1 Race Class</div>
+        </div>
+        
+        <div class="sheet-body" style="flex-direction: column;">
+            
+            <div class="equip-grid-layout">
+                <div id="gi-eq-ammo" class="eq-cell-center"></div> 
+                <div id="gi-eq-top" class="eq-cell-center"></div> 
+                <div></div> 
+                
+                <div id="gi-eq-left" class="eq-cell-left"></div> 
+                <div id="gi-portrait" class="portrait-main"><span>[ NO PORTRAIT ]</span></div>
+                <div id="gi-eq-right" class="eq-cell-right"></div> 
+                
+                <!-- 🌟 NEW: Ring Slots! -->
+                <div id="gi-eq-ring1" class="eq-cell-center"></div> 
+                <div id="gi-eq-bottom" class="eq-cell-center"></div> 
+                <div id="gi-eq-ring2" class="eq-cell-center"></div> 
+            </div>
+            
+            <div class="cs-section">
+                <h3>STATS</h3>
+                <div id="gi-stats" class="stat-grid"></div>
+            </div>
+            
+        </div> 
+
+        <div id="gi-action-buttons" style="display: flex; justify-content: space-between; gap: 15px; margin-top: 20px;">
+            <!-- Buttons dynamically injected here! -->
+        </div>
+
+    </div>
+</div>
+
+<!-- 🛒 SHOP MODAL 🛒 -->
+<div id="shop-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 1500; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+    <div class="modal-box scalable-modal" style="max-width: 1150px; height: 972px;">
+        <div class="char-sheet" style="flex-direction: row; gap: 30px; height: 100%;">
+            
+            <!-- LEFT: Shopkeeper Image & Controls -->
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 15px; border-right: 3px double #8b4513; padding-right: 20px; min-width: 360px;">
+                <h1 id="sm-name" style="margin: 0; font-size: 2.5rem; color: #5a2e0e; text-shadow: 1px 1px 0px rgba(255,255,255,0.5); text-align: center;">Shop Name</h1>
+                
+                <!-- 🌟 FIXED: Changed aspect-ratio to 1/1 to perfectly match the 512x512 artwork! -->
+                <div id="sm-image" style="width: 100%; max-width: 400px; aspect-ratio: 1/1; margin: 0 auto; background-color: #000; border: 6px solid #5a2e0e; border-radius: 4px; box-shadow: inset 0 0 20px #000; background-size: cover; background-position: center;"></div>
+                
+                <div id="sm-welcome" style="font-size: 1.3rem; font-style: italic; font-weight: bold; color: #444; text-align: center; margin-top: 10px;">"Welcome, traveler!"</div>
+                
+                <div style="display: flex; gap: 10px; margin-top: auto;">
+                    <button id="btn-sm-buy" style="flex: 1; height: 60px;" class="shop-tab-btn active">🛒 Buy Items</button>
+                    <button id="btn-sm-sell" style="flex: 1; height: 60px;" class="shop-tab-btn">💰 Sell Items</button>
+                </div>
+                <button id="btn-sm-leave" style="width: 100%; height: 60px; background: #8b0000; color: #fff; border-color: #ff4444 #440000 #440000 #ff4444;">🏃 Leave Shop</button>
+            </div>
+            
+            <!-- RIGHT: Item Grid & Gold -->
+            <div style="flex: 1.5; display: flex; flex-direction: column; min-height: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px dashed #8b4513; margin-bottom: 15px; padding-bottom: 10px;">
+                    <h2 id="sm-mode-title" style="margin: 0; font-size: 2rem; color: #221100;">Items for Sale</h2>
+                    <div style="font-size: 1.6rem; font-weight: bold; color: #8b6508;">Party Gold: <span id="sm-gold">0</span></div>
+                </div>
+                
+                <!-- 🌟 NEW: Shop Item Tabs! -->
+                <div class="inv-tabs" id="shop-tabs" style="margin-bottom: -4px; position: relative; z-index: 10;">
+                    <div class="inv-tab active" id="sm-tab-All" onclick="setShopTab('All')">All</div>
+                    <div class="inv-tab" id="sm-tab-Weapon" onclick="setShopTab('Weapon')">Weapons</div>
+                    <div class="inv-tab" id="sm-tab-Armor" onclick="setShopTab('Armor')">Armor</div>
+					<div class="inv-tab" id="sm-tab-Ammo" onclick="setShopTab('Ammo')">Ammo</div>
+					<div class="inv-tab" id="sm-tab-Instrument" onclick="setShopTab('Instrument')">Instruments</div>
+                    <div class="inv-tab" id="sm-tab-Consumable" onclick="setShopTab('Consumable')">Items</div>		
+					<div class="inv-tab" id="sm-tab-Game" onclick="setShopTab('Game')" style="display:none; background: #5a2e0e; color: #fada5e;">🎴 Play Chance Encounter</div>
+					<!-- 🌟 GUILD TABS -->
+                    <div class="inv-tab" id="sm-tab-LevelUp" onclick="setShopTab('LevelUp')" style="display:none;">Training</div>
+                    <div class="inv-tab" id="sm-tab-Barracks" onclick="setShopTab('Barracks')" style="display:none;">Barracks</div>
+                    <div class="inv-tab" id="sm-tab-Recruit" onclick="setShopTab('Recruit')" style="display:none;">Recruits</div>
+                </div>
+                
+                <!-- 🌟 FIXED: Overrode max-height so it spans the entire window dynamically! -->
+                <div class="inv-grid-wrapper" style="flex: 1; max-height: none;">
+					<div id="sm-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; align-content: start;">
+						<!-- Items inject here -->
+					</div>
+
+					<div id="sm-expiry-timer" style="text-align: right; color: #666; font-size: 0.7rem; margin-top: 10px;"></div>
+					<div id="sm-game-container" style="display:none; flex-direction:column; gap:10px; height:100%; width:100%; background: url('assets/table-back.webp') repeat; border: 4px solid #5a2e0e; box-sizing: border-box; padding: 10px;">
+						<div id="game-status" style="text-align:center; font-size: 1.2rem; font-weight:bold; color:#e8dcc4; text-shadow: 1px 1px 2px #000; flex-shrink:0;">Set your stake to play.</div>
+
+						<div id="game-controls-wrapper" style="display:flex; gap: 20px; justify-content: center; align-items: center; background: transparent; padding: 10px; border-radius: 4px; flex-shrink: 0; border: none;">
+
+							<div id="betting-zone" style="display: flex; flex-direction: column; gap: 5px; width: 120px;">
+								<label style="color:#e8dcc4; font-size: 0.9rem; font-weight: bold; text-shadow: 1px 1px 2px #000;">Stake (G):</label>
+								<input type="number" id="game-stake" value="10" style="width:100%; padding:8px; font-size:1.2rem; box-sizing:border-box;">
+								<button id="btn-game-deal" onclick="window.initiateCardGame()" style="padding:10px; width:100%;">Roll Dice</button>
+							</div>
+
+							<div id="dice-container" style="width: 140px; height: 140px; display: flex; justify-content: center; align-items: center;">
+								<div class="dice-scene">
+									<div class="dice-cube" id="dice">
+										<div class="dice-face face-1"><i class="custom-glyph">&#59898;</i><span>HP</span></div>
+										<div class="dice-face face-2"><i class="custom-glyph">&#59899;</i><span>SP</span></div>
+										<div class="dice-face face-3"><i class="custom-glyph">&#60054;</i><span>AC</span></div>
+										<div class="dice-face face-4"><i class="custom-glyph">&#59773;</i><span>Melee</span></div>
+										<div class="dice-face face-5"><i class="custom-glyph">&#59768;</i><span>Ranged</span></div>
+										<div class="dice-face face-6"><i class="custom-glyph">&#59830;</i><span>Magic</span></div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div id="game-display" style="display:flex; flex-direction:column; gap:10px; overflow-y:auto; flex:1; padding-top:10px;">
+							<!-- Cards inject here -->
+						</div>
+					</div>
+				</div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- 🗺️ FULL MAP MODAL 🗺️ -->
+<div id="full-map-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; padding: 1px; box-sizing: border-box;">
+    <div class="scalable-modal" style="position: relative; width: 100%; max-width: 1024px; aspect-ratio: 1024 / 768; background-image: url('assets/big_map.webp'); background-size: 100% 100%; display: flex; flex-direction: column; align-items: center;">
+        <div style="width: 100%; height: 100%; padding: 9% 12% 11% 12%; box-sizing: border-box; display: flex; flex-direction: column;">
+
+            <!-- 2. Title with Zoom Controls -->
+            <div id="big-map-title-bar" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 10px; width: 100%;">
+                <div style="display: flex; gap: 5px;">
+                    <button id="btn-bigmap-zoom-in" style="width: 30px; height: 30px; font-weight:bold; padding:0;">+</button>
+                    <button id="btn-bigmap-zoom-out" style="width: 30px; height: 30px; font-weight:bold; padding:0;">-</button>
+                </div>
+                <div id="big-map-title" style="font-family: 'Georgia', serif; font-size: 2rem; font-weight: bold; color: #221100; text-align: center;">
+                    Barrowtown Vaults <span id="big-map-level" style="font-size: 1.2rem; color: #5a2e0e;">(Lvl 1)</span>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: row; width: 100%; flex: 1; min-height: 0; gap: 10px; align-items: flex-start; justify-content: flex-start;">
+                <!-- Map area -->
+				<div style="flex: 1; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; border: none; background: transparent;">
+                    <canvas id="big-map-canvas" width="1200" height="1200" style="width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply;"></canvas>
+                </div>
+
+                <div id="big-map-legend-box" class="minimap-legend" style="flex: 0 0 180px; display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; color: #221100; font-family: 'Georgia', serif; justify-content: flex-start; margin-top: 20px;">
+                </div>
+            </div>
+        </div>
+        <button id="btn-close-big-map" style="position: absolute; bottom: 4%; width: 180px; height: 45px;">Close Map</button>
+    </div>
+</div>
+
+<!-- 🔍 ITEM INSPECTOR MODAL 🔍 -->
+<div id="item-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+
+    <div class="scalable-modal" style="background: #e8dcc4; background-image: url('assets/parchment.webp'); border: 6px solid #332211; border-radius: 4px; box-shadow: inset 0 0 50px rgba(139, 69, 19, 0.4), 10px 10px 20px rgba(0,0,0,0.8); width: 100%; max-width: 650px; display: flex; flex-direction: column; padding: 20px; font-family: 'Georgia', serif; color: #111;">
+
+        <!-- HEADER -->
+        <div style="border-bottom: 3px double #8b4513; margin-bottom: 15px; padding-bottom: 5px;">
+            <h2 id="im-name" style="margin: 0; font-size: 2.2rem; color: #5a2e0e; text-shadow: 1px 1px 0px rgba(255,255,255,0.5);">Item Name</h2>
+            <div id="im-subtitle" style="font-size: 1.2rem; font-style: italic; color: #444; font-weight: bold;">Level X Type</div>
+        </div>
+        
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            
+            <!-- LEFT: 256x256 IMAGE (Now relative so we can put text over it) -->
+            <div style="flex: 0 0 256px; height: 256px; border: 6px solid #5a2e0e; background: #000; display: flex; justify-content: center; align-items: center; box-shadow: inset 0 0 20px #000; border-radius: 4px; position: relative;">
+                <div id="im-icon" style="width: 100%; height: 100%; background-size: contain; background-position: center; background-repeat: no-repeat; "></div>
+                <!-- THE NEW QUANTITY TAG -->
+                <div id="im-qty-tag" style="position: absolute; bottom: 5px; right: 8px; color: #ddd; font-size: 1.6rem; font-weight: bold; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 2px 2px 4px #000; display: none;">x1</div>
+            </div>
+            
+            <!-- RIGHT: STATS & CONTROLS -->
+            <div style="flex: 1; display: flex; flex-direction: column; min-width: 200px;">
+                
+                <div id="im-stats" style="font-size: 1.3rem; line-height: 1.6; flex: 1; border-bottom: 2px dashed #8b4513; margin-bottom: 15px; padding-bottom: 15px;">
+                    <!-- Stats inject here dynamically -->
+                </div>
+                
+                <!-- DYNAMIC BUTTONS (Moved ABOVE the slider) -->
+                <div id="im-buttons" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                    <!-- Action buttons inject here -->
+                </div>
+
+                <!-- DISCARD SLIDER (Subtle, borderless, moved below buttons) -->
+                <div id="im-drop-zone" style="display:none; padding: 0 5px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #555; font-style: italic;">
+                        <span>Discard Quantity:</span>
+                        <span id="im-drop-val" style="color: #8b0000; font-weight: bold;">1</span>
+                    </div>
+                    <input type="range" id="im-drop-slider" min="1" max="1" value="1" style="width:100%; margin-top:2px; cursor: pointer;" oninput="document.getElementById('im-drop-val').innerText=this.value;">
+                </div>
+                
+                <button onclick="closeItemModal()" style="margin-top: 15px; width: 100%; height: 50px; background: #555; color: #fff; border-color: #888 #333 #333 #888;">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🔮 SPELL INSPECTOR MODAL 🔮 -->
+<div id="spell-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 4000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+
+    <div class="scalable-modal" style="background: #e8dcc4; background-image: url('assets/parchment.webp'); border: 6px solid #332211; border-radius: 4px; box-shadow: inset 0 0 50px rgba(139, 69, 19, 0.4), 10px 10px 20px rgba(0,0,0,0.8); width: 100%; max-width: 650px; display: flex; flex-direction: column; padding: 20px; font-family: 'Georgia', serif; color: #111;">
+
+        <!-- HEADER -->
+        <div style="border-bottom: 3px double #8b4513; margin-bottom: 15px; padding-bottom: 5px;">
+            <h2 id="spm-name" style="margin: 0; font-size: 2.2rem; color: #0044aa; text-shadow: 1px 1px 0px rgba(255,255,255,0.5);">Spell Name</h2>
+            <div id="spm-subtitle" style="font-size: 1.2rem; font-style: italic; color: #444; font-weight: bold;">Level X Spell</div>
+        </div>
+        
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            
+            <!-- LEFT: 256x256 IMAGE -->
+            <div style="flex: 0 0 256px; height: 256px; border: 6px solid #5a2e0e; background: #000; display: flex; justify-content: center; align-items: center; box-shadow: inset 0 0 20px #000; border-radius: 4px; position: relative;">
+                <div id="spm-icon" style="width: 100%; height: 100%; background-size: contain; background-position: center; background-repeat: no-repeat;"></div>
+            </div>
+            
+            <!-- RIGHT: STATS & CONTROLS -->
+            <div style="flex: 1; display: flex; flex-direction: column; min-width: 200px;">
+                
+                <div id="spm-stats" style="font-size: 1.3rem; line-height: 1.6; flex: 1; border-bottom: 2px dashed #8b4513; margin-bottom: 15px; padding-bottom: 15px;">
+                    <!-- Stats inject here dynamically -->
+                </div>
+                
+                <div id="spm-buttons" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Action buttons inject here -->
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🌟 LEVEL UP SUMMARY MODAL 🌟 -->
+<div id="levelup-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 3000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+    <div class="scalable-modal" style="background: #e8dcc4; background-image: url('assets/parchment.webp'); background-size: 128px;  border: 6px solid #332211; border-radius: 4px; box-shadow: inset 0 0 50px rgba(139, 69, 19, 0.4), 10px 10px 20px rgba(0,0,0,0.8); width: 100%; max-width: 450px; display: flex; flex-direction: column; padding: 20px; font-family: 'Georgia', serif; color: #111; text-align: center;">
+
+        <h2 style="margin: 0 0 15px 0; font-size: 2.8rem; color: #008800; text-shadow: 2px 2px 0px rgba(0,0,0,0.2);">LEVEL UP!</h2>
+        
+        <!-- Character Portrait -->
+        <div id="lu-portrait" style="width: 128px; height: 128px; margin: 0 auto 10px auto; border: 4px solid #5a2e0e; background-color: #000; box-shadow: inset 0 0 15px #000;"></div>
+        
+        <h3 id="lu-name" style="margin: 0; font-size: 2rem; color: #5a2e0e;">Character Name</h3>
+        <div id="lu-subtitle" style="font-size: 1.2rem; font-style: italic; color: #444; margin-bottom: 15px; font-weight: bold;">Reached Level X</div>
+
+        <!-- The Stats Summary Box -->
+        <div id="lu-stats" style="font-size: 1.4rem; line-height: 1.8; border-top: 2px dashed #8b4513; border-bottom: 2px dashed #8b4513; padding: 15px 0; margin-bottom: 20px;">
+            <!-- Stats injected here -->
+        </div>
+
+        <button onclick="document.getElementById('levelup-modal').style.display = 'none';" style="width: 100%; height: 50px; background: #44aa44; color: #fff; border-color: #006600;">Excellent!</button>
+    </div>
+</div>
+
+<!-- 🌟 SPELLBOOK MODAL 🌟 -->
+<div id="spellbook-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 3500; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+    <div class="scalable-modal" style="background: #e8dcc4; background-image: url('assets/parchment.webp'); background-size: 128px;  border: 6px solid #332211; border-radius: 4px; box-shadow: inset 0 0 50px rgba(139, 69, 19, 0.4), 10px 10px 20px rgba(0,0,0,0.8); width: 100%; max-width: 650px; height: 864px; max-height: 864px; display: flex; flex-direction: column; padding: 20px; font-family: 'Georgia', serif; color: #111;">
+        <div style="border-bottom: 3px double #8b4513; margin-bottom: 15px; padding-bottom: 5px; display:flex; justify-content:space-between; align-items:baseline; flex-shrink: 0;">
+            <h2 id="sb-title" style="margin: 0; font-size: 2.2rem; color: #0044aa; text-shadow: 1px 1px 0px rgba(255,255,255,0.5);">Spellbook</h2>
+            <div id="sb-mp" style="font-size: 1.4rem; font-weight: bold; color: #0044aa;">MP: 0 / 0</div>
+        </div>
+        
+        <!-- Spell Category Tabs -->
+        <div class="inv-tabs" id="sb-main-tabs" style="margin-bottom: 0px; justify-content: center; flex-wrap: wrap; flex-shrink: 0;">
+            <div class="inv-tab active" id="sbt-All" onclick="setSpellTab('All')">All Spells</div>
+            <div class="inv-tab" id="sbt-Offensive" onclick="setSpellTab('Offensive')">Offensive</div>
+            <div class="inv-tab" id="sbt-Healing" onclick="setSpellTab('Healing')">Healing / Cure</div>
+            <div class="inv-tab" id="sbt-Utility" onclick="setSpellTab('Utility')">Utility</div>
+        </div>
+
+        <!-- Elemental Sub-Tabs (Hidden by default) -->
+        <div class="inv-tabs" id="sb-elem-tabs" style="display: none; margin-bottom: 4px; justify-content: center; flex-wrap: wrap; font-size: 0.8rem; background: rgba(0,0,0,0.05); padding-top: 4px; border-radius: 4px; flex-shrink: 0;">
+            <div class="inv-tab active" id="sbet-All" onclick="setSpellElemTab('All')">All</div>
+            <div class="inv-tab" id="sbet-fire" onclick="setSpellElemTab('fire')">🔥 Fire</div>
+            <div class="inv-tab" id="sbet-ice" onclick="setSpellElemTab('ice')">❄️ Ice</div>
+            <div class="inv-tab" id="sbet-lightning" onclick="setSpellElemTab('lightning')">⚡ Lightning</div>
+            <div class="inv-tab" id="sbet-arcane" onclick="setSpellElemTab('arcane')">✨ Arcane</div>
+            <div class="inv-tab" id="sbet-void" onclick="setSpellElemTab('void')">🌌 Void</div>
+            <div class="inv-tab" id="sbet-holy" onclick="setSpellElemTab('holy')">☀️ Holy</div>
+            <div class="inv-tab" id="sbet-dark" onclick="setSpellElemTab('dark')">💀 Dark</div>
+        </div>
+
+        <!-- Spell List -->
+        <!-- 🌟 FIXED: Replaced max-height with flex: 1 and min-height: 0 so it dynamically fills the exact remaining space! -->
+        <div id="sb-list" style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; overflow-x:hidden; flex: 1; min-height: 0; margin-top: 8px; margin-bottom:15px; padding: 4px;">
+            <!-- Buttons injected here -->
+        </div>
+
+        <div style="display: flex; justify-content: center; flex-shrink: 0;">
+            <button onclick="document.getElementById('spellbook-modal').style.display = 'none';" style="width: 250px; height: 50px; background: #555; color: #fff; border-color: #888 #333 #333 #888;">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- 🧰 CHEST OPENER MODAL 🧰 -->
+<div id="chest-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 3000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+
+    <div class="scalable-modal" style="background: #e8dcc4; background-image: url('assets/parchment.webp'); border: 6px solid #332211; border-radius: 4px; box-shadow: inset 0 0 50px rgba(139, 69, 19, 0.4), 10px 10px 20px rgba(0,0,0,0.8); width: 100%; max-width: 450px; display: flex; flex-direction: column; padding: 20px; font-family: 'Georgia', serif; color: #111;">
+
+        <div style="border-bottom: 3px double #8b4513; margin-bottom: 15px; padding-bottom: 5px; text-align: center;">
+            <h2 style="margin: 0; font-size: 2.2rem; color: #5a2e0e;">Who opens the chest?</h2>
+        </div>
+
+        <div id="cm-list" style="display:flex; flex-direction:column; gap:8px; overflow-y:auto; overflow-x:hidden; max-height: 756px; padding-right: 4px; box-sizing: border-box;">
+            <!-- Character buttons injected here dynamically -->
+        </div>
+
+        <button id="chest-modal-cancel-btn" onclick="document.getElementById('chest-modal').style.display = 'none';" style="margin-top: 15px; height: 50px; background: #555; color: #fff;">Leave it closed</button>
+    </div>
+</div>
+
+<!-- 📖 CLASS & RACE INFO MODAL 📖 -->
+<div id="info-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 4000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+    <div class="scalable-modal" style="background: #e8dcc4; background-image: url('assets/parchment.webp'); background-size: 128px;  border: 6px solid #332211; border-radius: 4px; box-shadow: inset 0 0 50px rgba(139, 69, 19, 0.4), 10px 10px 20px rgba(0,0,0,0.8); width: 100%; max-width: 550px; display: flex; flex-direction: column; padding: 25px; font-family: 'Georgia', serif; color: #111;">
+        <div style="border-bottom: 3px double #8b4513; margin-bottom: 15px; padding-bottom: 10px;">
+            <h2 id="info-title" style="margin: 0; font-size: 2.2rem; color: #0044aa; text-shadow: 1px 1px 0px rgba(255,255,255,0.5);">Race & Class</h2>
+        </div>
+        
+        <div id="info-race-text" style="font-size: 1.2rem; line-height: 1.5; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #8b4513;">
+            <!-- Race info injected here -->
+        </div>
+
+        <div id="info-class-text" style="font-size: 1.2rem; line-height: 1.5; margin-bottom: 20px;">
+            <!-- Class info injected here -->
+        </div>
+
+        <button onclick="document.getElementById('info-modal').style.display = 'none';" style="width: 250px; margin: 0 auto; height: 50px; background: #555; color: #fff; border-color: #888 #333 #333 #888;">Close</button>
+    </div>
+</div>
+
+<!-- 🏠 HOUSE INTERIOR OVERLAY 🏠 -->
+<div id="house-interior-view" style="display:none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 5000; background: #000; flex-direction: column; align-items: center; justify-content: center;">
+    <div class="scalable-modal" style="width: 100%; max-width: 1000px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div id="house-interior-image" style="width: 100%; height: 600px; background-size: contain; background-repeat: no-repeat; background-position: center;"></div>
+        <div style="text-align: center; margin: 20px 0;">
+            <h2 id="house-title" style="color: #fff; font-family: 'Georgia', serif; margin: 0;">Empty House</h2>
+            <p id="house-desc" style="color: #ccc; font-family: 'Georgia', serif; margin: 5px 0 0 0; font-style: italic;"></p>
+        </div>
+        <button id="btn-read-house-message" style="display:none; width: 200px; height: 50px; margin-bottom: 10px; background: #8b6508; color: #fff;">Read Message</button>
+        <button id="btn-leave-house" style="width: 200px; height: 50px;">Leave</button>
+    </div>
+</div>
+
+<!-- 🚀 FAST TRAVEL MODAL -->
+<div id="fast-travel-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 5000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+    <div class="scalable-modal" style="background: #e8dcc4; background-image: url('assets/parchment.webp'); border: 6px solid #332211; border-radius: 4px; box-shadow: 10px 10px 20px rgba(0,0,0,0.8); width: 100%; max-width: 400px; padding: 30px; text-align: center; font-family: 'Georgia', serif;">
+        <h2 style="margin: 0 0 20px 0; color: #5a2e0e;">Fast Travel</h2>
+        <p style="font-size: 1.2rem; color: #444; margin-bottom: 30px;">Are you sure you wish to travel to <span id="ft-target-name" style="font-weight:bold; color:#0044aa;">[Location]</span>?</p>
+        <div style="display: flex; gap: 15px;">
+            <button id="btn-ft-yes" style="flex: 1; height: 50px; background: #44aa44; color: #fff;">Yes</button>
+            <button id="btn-ft-no" style="flex: 1; height: 50px; background: #8b0000; color: #fff;">No</button>
+        </div>
+    </div>
+</div>
+
+<!-- 🌟 ENDING MODAL -->
+<div id="ending-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.98); z-index: 9999; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; font-family: 'Georgia', serif;">
+    <div class="scalable-modal" style="background: #e8dcc4; background-image: url('assets/parchment.webp'); border: 8px double #332211; border-radius: 4px; box-shadow: 0 0 100px rgba(0,0,0,0.9); width: 100%; max-width: 900px; display: flex; flex-direction: row; padding: 40px; color: #111; gap: 40px;">
+
+        <!-- Left: Imagery (Portrait, Baton, Bard) -->
+        <div style="flex: 0 0 200px; display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center;">
+            <div id="ending-wight-portrait" style="width: 180px; height: 180px; border: 4px solid #5a2e0e; background: #000; background-size: contain; background-repeat: no-repeat; background-position: center;"></div>
+            <div id="ending-baton-img" style="width: 180px; height: 180px; border: 4px solid #5a2e0e; background: #000; background-image: url('assets/item_quest_silent_baton.webp'); background-size: contain; background-repeat: no-repeat; background-position: center;"></div>
+            <div id="ending-bard-portrait" style="width: 180px; height: 180px; border: 4px solid #5a2e0e; background: #000; background-size: contain; background-repeat: no-repeat; background-position: center;"></div>
+        </div>
+
+        <!-- Right: Text -->
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+            <h2 id="ending-modal-title" style="margin: 0 0 20px 0; font-size: 2.5rem; color: #5a2e0e; text-shadow: 1px 1px 0px rgba(255,255,255,0.5);">The Silent Chord</h2>
+            <p id="ending-text" style="font-size: 1.2rem; line-height: 1.6; color: #111; margin-bottom: 30px;"></p>
+
+            <div style="display: flex; gap: 15px;">
+                <button onclick="window.restartGame()" style="flex: 1; height: 60px; font-size: 1.2rem; background: #44aa44; color: #fff; border-color: #006600;">Restart Game</button>
+                <button onclick="window.closeEndingModal()" style="flex: 1; height: 60px; font-size: 1.2rem; background: #555; color: #fff; border-color: #333;">Continue Playing</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const GAME_VERSION = "1.0.4";
+
+    // 🌟 PERFECT SCALING ENGINE
+    window.resizeGame = function() {
+        const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+
+        const uiBg = document.getElementById('ui-background');
+        if (uiBg) {
+            uiBg.style.transform = `scale(${scale})`;
+        }
+
+        // 🌟 Apply identical scaling to all modals!
+        document.querySelectorAll('.scalable-modal').forEach(el => {
+            el.style.transform = `scale(${scale})`;
+        });
+    };
+    window.addEventListener('resize', window.resizeGame);
+    window.addEventListener('orientationchange', window.resizeGame);
+    window.addEventListener('fullscreenchange', window.resizeGame);
+    window.resizeGame();
+
+    // 🧪 TESTING FLAGS
+    window.TEST_MODE_ALWAYS_ENABLE_FLEE = false; 
+
+    // 🌟 Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            console.log("Service Worker registered.");
+        }).catch(err => {
+            console.log("Service Worker failed to register:", err);
+        });
+    }
+
+    (async function bootload() {
+        let storedVersion = localStorage.getItem('lyrewight_version');
+        if (storedVersion !== GAME_VERSION) {
+            console.log("New version detected, clearing stale storage.");
+            localStorage.clear(); 
+            localStorage.setItem('lyrewight_version', GAME_VERSION);
+        }
+
+        // Logic for CSS and JS injection with versioned query strings
+        // This ensures the browser fetches the new file if you update the GAME_VERSION above
+        let css = document.createElement('link'); 
+        css.rel = 'stylesheet'; 
+        css.href = "css/style.css?v=" + GAME_VERSION;
+        document.head.appendChild(css);
+
+        const scripts = [        
+            'data/lz-string.min.js',
+            'data/bestiary.js', 
+            'data/items.js', 
+            'data/worldmaps.js',   
+            'js/data.js', 
+            'js/game.js',              
+            'js/render.js'        
+        ];
+		
+        scripts.forEach(src => { 
+            let s = document.createElement('script'); 
+            // The ?v= appended here is what busts the cache when you update GAME_VERSION
+            s.src = src + "?v=" + GAME_VERSION; 
+
+            if (src.includes('dice-box')) {
+                s.type = "module";
+            } else {
+                s.type = "text/javascript";
+            }
+
+            s.async = false; 
+            document.body.appendChild(s); 
+        });
+    })();
+</script>
+
+</body>
+</html>

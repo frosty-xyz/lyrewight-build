@@ -1,0 +1,141 @@
+{"frames": [
+
+{
+	"filename": "enemy_arachne.webp",
+	"frame": {"x":1473,"y":1024,"w":485,"h":428},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":13,"y":71,"w":485,"h":428},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_arch_lich.webp",
+	"frame": {"x":0,"y":1471,"w":486,"h":508},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":21,"y":0,"w":486,"h":508},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_astral_stalker.webp",
+	"frame": {"x":505,"y":0,"w":502,"h":466},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":38,"w":502,"h":466},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_banshee.webp",
+	"frame": {"x":930,"y":1470,"w":480,"h":509},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":13,"y":3,"w":480,"h":509},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_demi_lich.webp",
+	"frame": {"x":1001,"y":481,"w":495,"h":477},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":7,"y":19,"w":495,"h":477},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_doomsayer_f.webp",
+	"frame": {"x":1496,"y":512,"w":475,"h":512},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":475,"h":512},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_dragon_white_ancient.webp",
+	"frame": {"x":495,"y":919,"w":493,"h":490},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":19,"y":0,"w":493,"h":490},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_empyrean.webp",
+	"frame": {"x":0,"y":964,"w":489,"h":507},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":23,"y":5,"w":489,"h":507},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_fire_elemental.webp",
+	"frame": {"x":988,"y":958,"w":485,"h":512},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":12,"y":0,"w":485,"h":512},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_inquisitor_f.webp",
+	"frame": {"x":0,"y":470,"w":495,"h":494},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":1,"y":11,"w":495,"h":494},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_lyre-wight.webp",
+	"frame": {"x":1505,"y":0,"w":456,"h":512},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":56,"y":0,"w":456,"h":512},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_necromancer_f.webp",
+	"frame": {"x":1473,"y":1452,"w":408,"h":512},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":0,"w":408,"h":512},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_nightwing_lord.webp",
+	"frame": {"x":0,"y":0,"w":505,"h":470},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":32,"w":505,"h":470},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_shadow_wraith_lord.webp",
+	"frame": {"x":1007,"y":0,"w":498,"h":481},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":9,"y":23,"w":498,"h":481},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_solar_angel_f.webp",
+	"frame": {"x":505,"y":466,"w":496,"h":453},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":9,"y":23,"w":496,"h":453},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_troll.webp",
+	"frame": {"x":486,"y":1471,"w":444,"h":507},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":28,"y":0,"w":444,"h":507},
+	"sourceSize": {"w":512,"h":512}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "bestiary-2.webp",
+	"format": "RGBA8888",
+	"size": {"w":1971,"h":1979},
+	"scale": "1",
+	"related_multi_packs": [ "bestiary.json", "bestiary-3.json", "bestiary-4.json", "bestiary-5.json", "bestiary-6.json", "bestiary-7.json", "bestiary-8.json" ],
+	"smartupdate": "$TexturePacker:SmartUpdate:d26c73849c54fa1a12c7e42ab7072847:171b5a42ecef10940d6c659bb87c0079:4d2b6521e293f1d4309f97758d0a9ce9$"
+}
+}

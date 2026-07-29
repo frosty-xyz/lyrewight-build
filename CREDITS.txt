@@ -1,0 +1,19 @@
+Curse of the Lyre-Wight Copyright © 2026 Toni Kuusela
+
+Development & Original Content:
+Game Design, Programming, and Concept: Toni Kuusela
+Art Assets: Created by Toni Kuusela using Stable Diffusion (Generative AI) and DreamShaperXL.
+Music: Composed by Toni Kuusela using Lyria (Generative AI).
+Sound Effects: Created by Toni Kuusela using Comfy Desktop and Stable-Audio-Open-1.0. (Generative AI).
+
+Third-Party Libraries & Tools:
+Dungeon Generation Logic: Based on 5e Random Dungeon Generator by donjon (https://donjon.bin.sh/5e/dungeon/)
+dice-box: Created by @3d-dice (https://github.com/3d-dice/dice-box). Licensed under MIT.
+lz-string: Created by Pieroxy (https://github.com/pieroxy/lz-string). Licensed under MIT.
+TexturePacker: Created by CodeAndWeb (https://www.codeandweb.com/texturepacker). Used for sprite sheet creation.
+
+Fonts & Icon Sets:
+Almendra: (c) 2011, Ana Timóteo. Licensed under the SIL Open Font License, Version 1.1.
+Eagle Lake: (c) 2012, Astigmatic One Eye Typographic Institute. Licensed under the SIL Open Font License, Version 1.1.
+Parisienne: (c) 2012, Astigmatic One Eye Typographic Institute. Licensed under the SIL Open Font License, Version 1.1.
+RPG Awesome (Icon Font): (c) Daniela Daniels. Licensed under the SIL Open Font License, Version 1.1.

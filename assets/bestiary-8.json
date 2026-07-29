@@ -1,0 +1,173 @@
+{"frames": [
+
+{
+	"filename": "enemy_acid_cube.webp",
+	"frame": {"x":706,"y":1433,"w":386,"h":393},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":64,"y":41,"w":386,"h":393},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_archer_f.webp",
+	"frame": {"x":805,"y":0,"w":384,"h":471},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":49,"y":16,"w":384,"h":471},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_bear.webp",
+	"frame": {"x":1189,"y":0,"w":396,"h":465},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":54,"y":21,"w":396,"h":465},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_centipede.webp",
+	"frame": {"x":1178,"y":471,"w":374,"h":467},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":89,"y":24,"w":374,"h":467},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_chimera.webp",
+	"frame": {"x":1092,"y":1413,"w":413,"h":467},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":51,"y":23,"w":413,"h":467},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_dread_knight.webp",
+	"frame": {"x":1505,"y":1412,"w":413,"h":469},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":8,"y":21,"w":413,"h":469},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_elder_brain.webp",
+	"frame": {"x":1175,"y":942,"w":400,"h":470},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":58,"y":22,"w":400,"h":470},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_goblin.webp",
+	"frame": {"x":0,"y":0,"w":402,"h":483},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":49,"y":17,"w":402,"h":483},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_goblin_slinger.webp",
+	"frame": {"x":1585,"y":0,"w":376,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":66,"y":24,"w":376,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_hellhound_alpha.webp",
+	"frame": {"x":396,"y":961,"w":423,"h":472},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":35,"y":19,"w":423,"h":472},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_hobgoblin.webp",
+	"frame": {"x":416,"y":478,"w":400,"h":472},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":37,"y":25,"w":400,"h":472},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_hound_skeleton.webp",
+	"frame": {"x":402,"y":0,"w":403,"h":478},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":67,"y":17,"w":403,"h":478},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_lurker.webp",
+	"frame": {"x":0,"y":483,"w":416,"h":478},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":71,"y":0,"w":416,"h":478},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_nightwalker.webp",
+	"frame": {"x":1552,"y":465,"w":408,"h":462},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":41,"y":22,"w":408,"h":462},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_shadow_spider.webp",
+	"frame": {"x":1575,"y":927,"w":339,"h":393},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":85,"y":58,"w":339,"h":393},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_skeleton.webp",
+	"frame": {"x":819,"y":942,"w":356,"h":471},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":68,"y":21,"w":356,"h":471},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_slime_small.webp",
+	"frame": {"x":375,"y":1437,"w":331,"h":409},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":84,"y":45,"w":331,"h":409},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_snake_cave.webp",
+	"frame": {"x":0,"y":1437,"w":375,"h":425},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":45,"y":45,"w":375,"h":425},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_void_reaper.webp",
+	"frame": {"x":0,"y":961,"w":396,"h":476},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":34,"y":21,"w":396,"h":476},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_wraith.webp",
+	"frame": {"x":816,"y":471,"w":362,"h":471},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":75,"y":27,"w":362,"h":471},
+	"sourceSize": {"w":512,"h":512}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "bestiary-8.webp",
+	"format": "RGBA8888",
+	"size": {"w":1961,"h":1881},
+	"scale": "1",
+	"related_multi_packs": [ "bestiary.json", "bestiary-2.json", "bestiary-3.json", "bestiary-4.json", "bestiary-5.json", "bestiary-6.json", "bestiary-7.json" ],
+	"smartupdate": "$TexturePacker:SmartUpdate:d26c73849c54fa1a12c7e42ab7072847:171b5a42ecef10940d6c659bb87c0079:4d2b6521e293f1d4309f97758d0a9ce9$"
+}
+}

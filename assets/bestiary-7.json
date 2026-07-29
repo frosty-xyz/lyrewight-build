@@ -1,0 +1,173 @@
+{"frames": [
+
+{
+	"filename": "enemy_bandit_m.webp",
+	"frame": {"x":440,"y":0,"w":403,"h":489},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":24,"y":13,"w":403,"h":489},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_crystal_colossus.webp",
+	"frame": {"x":1666,"y":453,"w":366,"h":478},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":71,"y":17,"w":366,"h":478},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_crystal_golem.webp",
+	"frame": {"x":1233,"y":1432,"w":433,"h":486},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":40,"y":15,"w":433,"h":486},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_cultist_f.webp",
+	"frame": {"x":0,"y":0,"w":440,"h":457},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":39,"y":30,"w":440,"h":457},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_dark_elf_assassin_f.webp",
+	"frame": {"x":1233,"y":945,"w":399,"h":487},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":49,"y":16,"w":399,"h":487},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_death_knight_m.webp",
+	"frame": {"x":797,"y":977,"w":436,"h":482},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":15,"y":18,"w":436,"h":482},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_dragon_diamond_ancient.webp",
+	"frame": {"x":1230,"y":464,"w":436,"h":481},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":44,"y":19,"w":436,"h":481},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_dragon_small.webp",
+	"frame": {"x":1703,"y":0,"w":344,"h":426},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":96,"y":42,"w":344,"h":426},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_ghoul.webp",
+	"frame": {"x":0,"y":1430,"w":364,"h":484},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":74,"y":15,"w":364,"h":484},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_minotaur.webp",
+	"frame": {"x":1632,"y":945,"w":408,"h":482},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":21,"y":13,"w":408,"h":482},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_mithril_golem.webp",
+	"frame": {"x":364,"y":1459,"w":433,"h":474},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":36,"y":25,"w":433,"h":474},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_ogre.webp",
+	"frame": {"x":0,"y":457,"w":393,"h":489},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":45,"y":12,"w":393,"h":489},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_orc.webp",
+	"frame": {"x":1666,"y":1427,"w":346,"h":483},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":76,"y":16,"w":346,"h":483},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_pit_fiend.webp",
+	"frame": {"x":393,"y":489,"w":438,"h":483},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":29,"w":438,"h":483},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_skeleton_warrior.webp",
+	"frame": {"x":831,"y":489,"w":399,"h":488},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":35,"y":14,"w":399,"h":488},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_tarrasque.webp",
+	"frame": {"x":1280,"y":0,"w":423,"h":453},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":35,"y":23,"w":423,"h":453},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_vampire_patriarch.webp",
+	"frame": {"x":797,"y":1459,"w":431,"h":485},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":13,"y":27,"w":431,"h":485},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_void_seer_m.webp",
+	"frame": {"x":368,"y":972,"w":429,"h":487},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":42,"y":14,"w":429,"h":487},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_warlord_ruin.webp",
+	"frame": {"x":0,"y":946,"w":368,"h":484},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":47,"y":17,"w":368,"h":484},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "enemy_wyvern.webp",
+	"frame": {"x":843,"y":0,"w":437,"h":464},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":54,"y":23,"w":437,"h":464},
+	"sourceSize": {"w":512,"h":512}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "bestiary-7.webp",
+	"format": "RGBA8888",
+	"size": {"w":2047,"h":1944},
+	"scale": "1",
+	"related_multi_packs": [ "bestiary.json", "bestiary-2.json", "bestiary-3.json", "bestiary-4.json", "bestiary-5.json", "bestiary-6.json", "bestiary-8.json" ],
+	"smartupdate": "$TexturePacker:SmartUpdate:d26c73849c54fa1a12c7e42ab7072847:171b5a42ecef10940d6c659bb87c0079:4d2b6521e293f1d4309f97758d0a9ce9$"
+}
+}
