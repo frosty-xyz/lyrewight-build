@@ -538,6 +538,21 @@ button:disabled { filter: grayscale(100%) opacity(0.5); cursor: not-allowed; }
     50% { transform: translateX(-50%) scale(1.2); } 
 }
 
+/* 🌟 ENDING MODAL EFFECTS */
+.character-shadow {
+    filter: drop-shadow(4px 4px 6px rgba(0,0,0,0.4));
+}
+
+.baton-pulse {
+    animation: pulsate-dark 2s infinite ease-in-out;
+}
+
+@keyframes pulsate-dark {
+    0% { filter: drop-shadow(0 0 5px rgba(50, 0, 80, 0.3)); transform: scale(1); }
+    50% { filter: drop-shadow(0 0 15px rgba(50, 0, 80, 0.8)); transform: scale(1.05); }
+    100% { filter: drop-shadow(0 0 5px rgba(50, 0, 80, 0.3)); transform: scale(1); }
+}
+
 /* ================= SHOP UI MODAL ================= */
 .shop-tab-btn { background: #8b4513; color: #fff; border-color: #d2b48c #4a2509 #4a2509 #d2b48c; opacity: 0.6; }
 .shop-tab-btn.active { opacity: 1; background: #5a2e0e; border-color: #fada5e #221100 #221100 #fada5e; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); transform: scale(0.98); }

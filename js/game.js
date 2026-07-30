@@ -416,7 +416,10 @@ window.getBaseXp = function(level) {
     return total;
 };
 
-window.showClassInfo = function(race, charClass, lookupName, displayName) {
+window.showClassInfo = function(race, charClass, lookupName = null, displayName = null) {
+    // 🌟 FIX: Handle missing arguments to prevent 'undefined' showing up as the title
+    if (!displayName) displayName = `${race} ${charClass}`;
+
     document.getElementById('info-title').innerText = displayName;
 
     let enemyData = lookupName ? enemyBestiary.find(e => e.name === lookupName) : null;
@@ -1058,11 +1061,12 @@ window.showEndingModal = function(bard = null) {
     // 🌟 Play Victory Theme
     window.playBgm('theme_victory');
 
-    // 🌟 Set Wight Portrait
+    // 🌟 Set Wight Portrait using Atlas System
     const wightData = enemyBestiary.find(e => e.name === "The Lyre-Wight");
     if (wightData && wightData.portraits.length > 0) {
-        let wPort = wightData.portraits[0].replace('.png', '.webp'); // 🌟 FIX: Force webp format
-        wightEl.style.backgroundImage = `url('assets/${wPort}?v=${GAME_VERSION}')`;
+        let wPort = wightData.portraits[0].replace('.png', '.webp');
+        // 🌟 FIX: Use getSpriteDataUrl to extract from Atlas
+        wightEl.style.backgroundImage = `url('${window.getSpriteDataUrl(wPort)}')`;
     }
 
     if (bard) {
@@ -1070,7 +1074,10 @@ window.showEndingModal = function(bard = null) {
         // 🌟 Baton Narrative
         batonEl.style.display = 'flex';
         bardEl.style.display = 'flex';
-        bardEl.style.backgroundImage = `url('${window.getCharPortrait(bard)}')`;
+
+        // 🌟 FIX: Use getSpriteDataUrl to extract from Atlas
+        batonEl.style.backgroundImage = `url('${window.getSpriteDataUrl('item_quest_silent_baton.webp')}')`;
+        bardEl.style.backgroundImage = `url('${window.getSpriteDataUrl(window.getCharPortrait(bard))}')`;
 
         const bName = bard.name;
         const pronoun = (bard.gender === 'f' ? 'She' : 'He');
@@ -1621,9 +1628,12 @@ window.showCombatItemPicker = function(charIndex) {
             else if (item.cures) desc = `Cures ${item.cures.join(', ')}`;
             else if (item.resurrect) desc = `Revives dead ally`;
 
+            // 🌟 FIXED: Retrieve icon path from the Texture Atlas system
+            let iconPath = window.getSpriteDataUrl(item.icon || item.iconM);
+
             btn.innerHTML = `
                 <div style="display: flex; gap: 12px; align-items: center;">
-                    <div class="sm-item-icon" style="background-image:url('assets/${item.icon || item.iconM}?v=${GAME_VERSION}'); border-radius: 4px; border: 2px solid rgba(139, 69, 19, 0.5);"></div>
+                    <div class="sm-item-icon" style="background-image:url('${iconPath}'); border-radius: 4px; border: 2px solid rgba(139, 69, 19, 0.5);"></div>
                     <div style="display: flex; flex-direction: column; gap: 4px;">
                         <div style="font-size:1.4rem; color:#0044aa; font-weight:bold; text-shadow: none;">${item.name} <span style="font-size:1rem; color:#555;">(x${qty})</span></div>
                         <div style="font-size:1.0rem; color:#5a2e0e; font-style:italic; font-weight:normal; text-shadow: none;">${desc}</div>
@@ -2418,8 +2428,12 @@ function updateCombatUI() {
         let spriteSize = partySpriteSizes[i];
         let barWidth = Math.min(115, Math.floor(spriteSize * 0.8));
         let pPct = Math.max(0, (p.hp / p.maxHp) * 100);
-        let barColor = pPct <= 20 ? '#cc0000' : (pPct <= 50 ? '#ffcc00' : '#00cc00');
+        let hpColor = pPct <= 20 ? '#cc0000' : (pPct <= 50 ? '#ffcc00' : '#00cc00');
+        let hasSp = p.maxMp > 0;
         let activeClass = (item.i === window.combatState.activeCharIndex) ? 'active' : '';
+
+        // 🌟 DYNAMIC BAR COLOR: Bard songs (Songs) match the roster orange
+        let spColor = (p.class === 'Bard') ? '#cc5500' : '#0044aa';
 
         const effectClass = p.visualEffect ? `effect-${p.visualEffect}` : '';
         const deadClass = p.hp <= 0 ? 'dead' : '';
@@ -2438,9 +2452,9 @@ function updateCombatUI() {
         partyDiv.innerHTML = `
             <div class="bf-sprite ${activeClass} ${effectClass} ${deadClass}" style="width: ${spriteSize}px; height: ${spriteSize}px; background-image: url('${pUrl}'); background-size: contain; background-position: bottom center; background-repeat: no-repeat;">
                 <div style="position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: ${barWidth}px; height: 6px; background: #222; border: 1px solid #000; visibility: ${uiVisibility};">
-                    <div style="width: ${pPct}%; height: 100%; background: ${barColor};"></div>
+                    <div style="width: ${pPct}%; height: 100%; background: ${hpColor};"></div>
                 </div>
-                ${p.maxMp > 0 ? `<div style="position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); width: ${barWidth}px; height: 4px; background: #222; border: 1px solid #000; visibility: ${uiVisibility};"><div style="width: ${Math.max(0, (p.mp / p.maxMp) * 100)}%; height: 100%; background: #0044aa;"></div></div>` : ''}
+                ${hasSp ? `<div style="position: absolute; bottom: -16px; left: 50%; transform: translateX(-50%); width: ${barWidth}px; height: 4px; background: #222; border: 1px solid #000; visibility: ${uiVisibility};"><div style="width: ${Math.max(0, (p.mp / p.maxMp) * 100)}%; height: 100%; background: ${spColor};"></div></div>` : ''}
             </div>`;
         partyZone.appendChild(partyDiv);
     });
@@ -4041,8 +4055,16 @@ function move(direction) {
     if (direction === 1 && typeof entities !== 'undefined') {
         let shopEnt = entities.find(e => e.type === 'shop' && e.wallX === nX && e.wallY === nY);
         let gateEnt = entities.find(e => (e.type === 'transition' || e.type === 'dungeon_gate') && e.wallX === nX && e.wallY === nY);
+        let forgeEnt = entities.find(e => e.type === 'forge_interaction' && e.wallX === nX && e.wallY === nY);
         let isWall = map[nY] ? map[nY][nX] >= 1 : false;
-        let isHouse = (worldMaps[currentMapId].theme === 'town' && isWall && !shopEnt && !gateEnt);
+        let isHouse = (worldMaps[currentMapId].theme === 'town' && isWall && !shopEnt && !gateEnt && !forgeEnt);
+
+        // Block forward movement into forge
+        if (forgeEnt) { 
+            logMsg("The forge is too hot to approach."); 
+            return; 
+        }
+
         if (shopEnt || gateEnt || isHouse) { interact(); return; }
     }
 
@@ -7004,7 +7026,10 @@ window.closeGuildInspector = function() {
 
 window.openGuildInspector = function(char, actionLabel, canAction, actionCallback) {
     document.getElementById('gi-name').innerText = char.name;
-    document.getElementById('gi-subtitle').innerHTML = `Level ${char.level} <span style="cursor: pointer; color: #0044aa; border-bottom: 1px dashed #0044aa;" onclick="window.showClassInfo('${char.race}', '${char.class}')">${char.race} ${char.class} ℹ️</span>`;
+
+    // 🌟 FIX: Pass null for lookupName and char.name as displayName to fix the 'undefined' overlay title
+    const displayName = char.name.replace(/'/g, "\\'");
+    document.getElementById('gi-subtitle').innerHTML = `Level ${char.level} <span style="cursor: pointer; color: #0044aa; border-bottom: 1px dashed #0044aa;" onclick="window.showClassInfo('${char.race}', '${char.class}', null, '${displayName}')">${char.race} ${char.class} ℹ️</span>`;
 
     let pPath = window.getCharPortrait(char);
     let pUrl = char.isSummon ? window.getSpriteDataUrl(pPath) : pPath;
@@ -7224,25 +7249,26 @@ window.renderShopMenu = function() {
     let modeTitle = document.getElementById('sm-mode-title');
     let shopTabs = document.getElementById('shop-tabs');
 
-   // ==========================================
+	// ==========================================
     // 🌟 SPECIAL HEALER SERVICE MENU
     // ==========================================
     if (activeShop.shopType === 'healer') {
-        btnBuy.style.display = 'none';  // 🌟 FIXED: Hide the redundant Buy button
-        btnSell.style.display = 'none'; // 🌟 FIXED: Hide the Sell button
+        btnBuy.style.display = 'none';  
+        btnSell.style.display = 'none'; 
         shopTabs.style.display = 'none'; 
         modeTitle.innerText = "Available Services";
 
         let servicesOffered = 0;
 
-        const addServiceCard = (title, cost, iconFile, isPortrait, onPurchase) => {
+        // 🌟 UPDATED: Accepts imageUrl directly, which can be an Atlas DataURL or a standard file URL
+        const addServiceCard = (title, cost, imageUrl, isPortrait, onPurchase) => {
             servicesOffered++;
             let canAfford = sharedGold >= cost;
             let card = document.createElement('div');
             card.className = `sm-item-card ${canAfford ? '' : 'disabled'}`;
             let radius = isPortrait ? '50%' : '4px'; 
             card.innerHTML = `
-                <div class="sm-item-icon" style="background-image:url('assets/${iconFile}?v=${GAME_VERSION}'); border-radius: ${radius};"></div>
+                <div class="sm-item-icon" style="background-image:url('${imageUrl}'); border-radius: ${radius};"></div>
                 <div class="sm-item-details">
                     <div class="sm-item-name">${title}</div>
                     <div class="sm-item-price">Cost: ${cost} G</div>
@@ -7263,12 +7289,15 @@ window.renderShopMenu = function() {
 
         party.forEach((char) => {
             if (char.name === "Empty") return;
-            let raceStr = char.race.toLowerCase(); let classStr = char.class.toLowerCase(); let genderStr = char.gender ? char.gender.toLowerCase() : "m";
-            let portraitPath = `portrait_${raceStr}_${classStr}_${genderStr}.webp`;
+
+            // 🌟 FIXED: Retrieve the portrait using your atlas-aware system
+            // getCharPortrait returns the filename, getSpriteDataUrl converts it to a usable URL
+            let pFilename = window.getCharPortrait(char);
+            let portraitUrl = window.getSpriteDataUrl(pFilename);
 
             if (char.hp <= 0) {
                 let cost = 2500 + char.maxHp;
-                addServiceCard(`Resurrect ${char.name}`, cost, portraitPath, true, () => {
+                addServiceCard(`Resurrect ${char.name}`, cost, portraitUrl, true, () => {
                     char.hp = char.maxHp;
 					char.mp = char.maxMp;
                     char.ailments =[]; 
@@ -7278,7 +7307,7 @@ window.renderShopMenu = function() {
                 if (char.ailments && char.ailments.length > 0) {
                     char.ailments.forEach(ailment => {
                         let cost = AILMENT_COSTS[ailment] || 50;
-                        addServiceCard(`Cure ${ailment}: ${char.name}`, cost, 'item_potion_cure10.webp', false, () => {
+                        addServiceCard(`Cure ${ailment}: ${char.name}`, cost, portraitUrl, true, () => {
                             char.ailments = char.ailments.filter(a => a !== ailment);
                         });
                     });
@@ -7287,16 +7316,15 @@ window.renderShopMenu = function() {
                 // 2. HEAL HP
                 if (char.hp < char.maxHp) {
                     let missingHp = char.maxHp - char.hp;
-                    addServiceCard(`Heal ${char.name} (${missingHp} HP)`, missingHp, portraitPath, true, () => {
+                    addServiceCard(`Heal ${char.name} (${missingHp} HP)`, missingHp, portraitUrl, true, () => {
                         char.hp = char.maxHp;
                     });
                 }
 
                 // 3. REPLENISH SP
                 if (char.maxMp > 0 && char.mp < char.maxMp) {
-                    // Only characters with an actual SP pool get this option!
                     let missingMp = char.maxMp - char.mp;
-                    addServiceCard(`Replenish SP ${char.name} (${missingMp} SP)`, missingMp, portraitPath, true, () => {
+                    addServiceCard(`Replenish SP ${char.name} (${missingMp} SP)`, missingMp, portraitUrl, true, () => {
                         char.mp = char.maxMp;
                     });
                 }
@@ -7347,7 +7375,7 @@ window.renderShopMenu = function() {
 
 
             party.forEach(char => {
-                if (char.name === "Empty") return;
+                if (char.name === "Empty" || char.isSummon) return; // 🌟 FILTERED SUMMONS
 
                 let xpNeeded = window.getXpCost(char.level); 
                 let canLevel = char.xp >= xpNeeded;
@@ -7482,11 +7510,11 @@ window.renderShopMenu = function() {
 
         else if (currentShopTab === 'Barracks') {
             modeTitle.innerText = "Manage Active Party";
-            let activeCount = party.filter(c => c.name !== "Empty").length;
+            let activeCount = party.filter(c => c.name !== "Empty" && !c.isSummon).length; // 🌟 FILTERED SUMMONS
 
             // Draw Active Roster
             party.forEach((char, idx) => {
-                if (char.name === "Empty") return;
+                if (char.name === "Empty" || char.isSummon) return; // 🌟 FILTERED SUMMONS
                 let canBench = activeCount > 1; // Can't bench your last member!
                 let desc = canBench ? "Currently in Party" : "Cannot bench last member";
                 addGuildCard(char, `${char.name} (Active)`, desc, canBench, "🛌 Bench Character", () => {
@@ -7498,6 +7526,7 @@ window.renderShopMenu = function() {
 
             // Draw Benched Roster
             guildRoster.forEach((char, idx) => {
+                if (char.isSummon) return; // 🌟 FILTERED SUMMONS
                 let canAdd = activeCount < 6;
                 let desc = canAdd ? "Waiting in Barracks" : "Party is full!";
                 addGuildCard(char, `${char.name} (Benched)`, desc, canAdd, "⚔️ Add to Party", () => {
@@ -7563,7 +7592,7 @@ window.renderShopMenu = function() {
         }
         return; // 🛑 EXIT EARLY! Do not render normal item shop logic!
     }
-
+	
     // ==========================================
     // 🛒 NORMAL SHOP MENU (Armoury, Potions, etc.)
     // ==========================================
@@ -7779,7 +7808,7 @@ window.renderShopMenu = function() {
             if (!item) return;
 
             if (!shopAcceptsItem(activeShop.shopType, item)) return;
-            if (currentShopTab !== 'All' && item.tab !== currentShopTab) return;
+            if (currentInvTab !== 'All' && item.tab !== currentInvTab) return;
             itemsShown++;
 
             let qty = typeof invObj === 'object' ? invObj.qty : 1;
@@ -8663,12 +8692,11 @@ window.executeForgeUnlock = function(openerIndex, ent) {
 
     // 1. Remove Old Quest Items from questInventory
     const questItemTypes = ['fork_earth', 'fork_gale', 'fork_flow', 'fork_ember', 'fork_dark', 'fork_aether', 'fork_blood', 'key_forge'];
-    for(let i = 0; i < questInventory.length; i++) {
+    for(let i = questInventory.length - 1; i >= 0; i--) {
         if (questInventory[i] && questItemTypes.includes(questInventory[i].itemType)) {
-            questInventory[i] = null;
+            questInventory.splice(i, 1);
         }
     }
-    questInventory = questInventory.filter(i => i !== null);
 
     // 2. Manually construct the Baton object
     let baton = { 
@@ -8692,7 +8720,7 @@ window.executeForgeUnlock = function(openerIndex, ent) {
     // 5. Remove entity from map
     entities = entities.filter(e => e !== ent);
 
-    // 🌟 PERSISTENCE FIX
+    // 6. PERSISTENCE FIX
     if (worldMaps[currentMapId]) {
         worldMaps[currentMapId].entities = entities;
         if (window.savedDynamicData && window.savedDynamicData[currentMapId]) {
@@ -9268,13 +9296,48 @@ window.applyStartingGear = function(startMode) {
 
     // 3. Apply items
     sharedInventory[0] = { id: "potion_hp_1", qty: 2 };
-    sharedInventory[1] = { id: "potion_mp_1", qty: 1 };
+    sharedInventory[1] = { id: "potion_mp_1", qty: 2 };
     sharedInventory[2] = { id: "potion_cure_1", qty: 1 };
-    sharedInventory[3] = { id: "torch", qty: 3 };
-    sharedInventory[4] = { id: "sword_short", qty: 1 }; 
-    sharedInventory[5] = { id: "gem_quartz", qty: 1 }; 
-    sharedInventory[6] = { id: "food_cheese", qty: 3 }; 
-    sharedInventory[7] = { id: "drink_water", qty: 2 }; 
+	sharedInventory[3] = { id: "potion_cure_2", qty: 1 };
+	sharedInventory[4] = { id: "potion_cure_6", qty: 1 };	
+    sharedInventory[5] = { id: "torch", qty: 3 };
+    sharedInventory[6] = { id: "sword_short", qty: 1 }; 
+	sharedInventory[7] = { id: "bow_short_wood", qty: 1 }; 	
+	sharedInventory[8] = { id: "arrow_iron", qty: 20 }; 		
+    sharedInventory[9] = { id: "gem_quartz", qty: 1 }; 
+    sharedInventory[10] = { id: "food_cheese", qty: 3 }; 
+    sharedInventory[11] = { id: "drink_water", qty: 2 }; 
+	
+	//questInventory.push({ 
+		//id: 'quest_item', 
+        //qty: 1, 
+        //isQuestItem: true, 
+        //itemType: 'silent_baton', 
+        //content: "A legendary weapon against the Lyre-Wight, injected for testing.", 
+        //title: "The Silent Baton", 
+        //type: 'quest', 
+        //location: "Starting Gear" 
+    //});
+	
+	// 🌟 DEBUG: Inject Harmonic Forge Quest Items
+    const debugQuestItems = [
+        'fork_earth', 'fork_gale', 'fork_flow', 'fork_ember', 
+        'fork_dark', 'fork_aether', 'fork_blood', 'key_forge'
+    ];
+	
+	//debugQuestItems.forEach(type => {
+        //questInventory.push({ 
+            //id: 'quest_item', 
+            //qty: 1, 
+            //isQuestItem: true, 
+            //itemType: type, 
+            //content: `Harmonic component ${type} injected for testing.`, 
+            //title: `Harmonic Item: ${type}`, 
+            //type: 'quest', 
+            //location: "Debug Injection" 
+        //});
+    //});
+	
 };
 
 window.playIntroSequence = async function(startMode = 'vaults') {

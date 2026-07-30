@@ -1753,10 +1753,33 @@ function drawMinimap() {
         });
     }
 
+    // 🌟 UPDATED: Render Player with High-Contrast Direction Indicator
     mctx.fillStyle = '#4488ff'; 
-    mctx.beginPath(); mctx.arc(cx, cy, cellSize / 2.5, 0, Math.PI * 2); mctx.fill(); mctx.stroke();
-    mctx.strokeStyle = '#fff'; mctx.lineWidth = 2.5; mctx.beginPath(); mctx.moveTo(cx, cy);
-    mctx.lineTo(cx + dx[player.dir] * (cellSize*0.6), cy + dy[player.dir] * (cellSize*0.6)); mctx.stroke();
+    mctx.strokeStyle = '#000'; 
+    mctx.lineWidth = 1.5;
+    mctx.beginPath(); 
+    mctx.arc(cx, cy, cellSize / 2.5, 0, Math.PI * 2); 
+    mctx.fill(); 
+    mctx.stroke();
+
+    let pointerLen = cellSize * 0.75;
+    mctx.lineCap = 'round';
+
+    // Outer black outline to ensure it's visible on any background
+    mctx.strokeStyle = '#000'; 
+    mctx.lineWidth = 4.5; 
+    mctx.beginPath(); 
+    mctx.moveTo(cx, cy);
+    mctx.lineTo(cx + dx[player.dir] * pointerLen, cy + dy[player.dir] * pointerLen); 
+    mctx.stroke();
+
+    // Inner bright white pointer
+    mctx.strokeStyle = '#ffffff'; 
+    mctx.lineWidth = 2.0; 
+    mctx.beginPath(); 
+    mctx.moveTo(cx, cy);
+    mctx.lineTo(cx + dx[player.dir] * pointerLen, cy + dy[player.dir] * pointerLen); 
+    mctx.stroke();
 
     let smallIconSize = "width: 8px; height: 8px; flex-shrink: 0;"; 
 
@@ -1823,6 +1846,7 @@ function drawMinimap() {
         legEl.innerHTML = legHtml;
     }
 }
+
 
 function renderParty() {
     const listEl = document.getElementById('party-list');
@@ -2244,11 +2268,37 @@ window.renderBigMapCanvas = function() {
         bctx.stroke();
     }
 
-    // Draw Player
+    // 🌟 UPDATED: Apply the same high-contrast direction indicator to the Full Map!
     let px = offsetX + (player.x * cellSize) + (cellSize / 2);
     let py = offsetY + (player.y * cellSize) + (cellSize / 2);
+    let pRadius = Math.max(3, cellSize / 2.5);
+
     bctx.fillStyle = '#4488ff'; 
-    bctx.beginPath(); bctx.arc(px, py, Math.max(3, cellSize / 2.5), 0, Math.PI * 2); bctx.fill(); bctx.stroke();
+    bctx.strokeStyle = '#000';
+    bctx.lineWidth = 1.5;
+    bctx.beginPath(); 
+    bctx.arc(px, py, pRadius, 0, Math.PI * 2); 
+    bctx.fill(); 
+    bctx.stroke();
+
+    let pointerLen = Math.max(5, cellSize * 0.75);
+    bctx.lineCap = 'round';
+
+    // Black Outline
+    bctx.strokeStyle = '#000';
+    bctx.lineWidth = 4.5;
+    bctx.beginPath();
+    bctx.moveTo(px, py);
+    bctx.lineTo(px + dx[player.dir] * pointerLen, py + dy[player.dir] * pointerLen);
+    bctx.stroke();
+
+    // White Inner Line
+    bctx.strokeStyle = '#fff';
+    bctx.lineWidth = 2.0;
+    bctx.beginPath();
+    bctx.moveTo(px, py);
+    bctx.lineTo(px + dx[player.dir] * pointerLen, py + dy[player.dir] * pointerLen);
+    bctx.stroke();
 
     return legendItems;
 };
