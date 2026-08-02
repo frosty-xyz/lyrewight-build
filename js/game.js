@@ -7351,18 +7351,36 @@ window.renderShopMenu = function() {
             if(el) el.style.display = 'block'; 
         });
 
+        // 🌟 NEW: Class Styling Configuration
+        const classStyleMap = {
+            "Warrior": { color: "#a52a2a", icon: "&#59773;" }, // Sword
+            "Paladin": { color: "#8b6508", icon: "&#60054;" }, // Shield
+            "Rogue":   { color: "#2e8b57", icon: "&#59768;" }, // Bow
+            "Mage":    { color: "#0044aa", icon: "&#59830;" }, // Magic
+            "Healer":  { color: "#008000", icon: "&#59898;" }, // Heart
+            "Bard":    { color: "#cc5500", icon: "&#59899;" }  // Spark/Note
+        };
+
         // Helper to draw character cards safely
         const addGuildCard = (char, title, desc, canAction, actionLabel, onClick) => {
             let card = document.createElement('div');
             // 🌟 Make card always clickable so we can inspect them!
             card.className = `sm-item-card`; 
+            card.style.position = 'relative'; // 🌟 Allow absolute icon positioning
             let raceStr = char.race.toLowerCase(); let classStr = char.class.toLowerCase(); let genderStr = char.gender ? char.gender.toLowerCase() : "m";
             let iconFile = `portrait_${raceStr}_${classStr}_${genderStr}.webp?v=${GAME_VERSION}`;
+
+            let clsStyle = classStyleMap[char.class] || { color: "#555", icon: "" };
+            let coloredTitle = title.replace(char.class, `<span style="color: ${clsStyle.color}; font-weight: bold;">${char.class}</span>`);
+
             card.innerHTML = `
                 <div class="sm-item-icon" style="background-image:url('assets/${iconFile}'); border-radius: 50%; background-color:#000;"></div>
                 <div class="sm-item-details">
-                    <div class="sm-item-name">${title}</div>
+                    <div class="sm-item-name">${coloredTitle}</div>
                     <div class="sm-item-price" style="${canAction ? 'color:#006600;' : 'color:#aa0000;'}">${desc}</div>
+                </div>
+                <div style="position: absolute; bottom: 4px; right: 8px; font-family: 'RPG Awesome'; font-size: 1.2rem; color: ${clsStyle.color}; opacity: 0.6; pointer-events: none;">
+                    ${clsStyle.icon}
                 </div>
             `;
             // 🌟 Open the inspector!
@@ -7555,17 +7573,23 @@ window.renderShopMenu = function() {
                     // We split the Name and Info text to maintain Name font-size but shrink the Info font-size
                     let charCard = document.createElement('div');
                     charCard.className = `sm-item-card`;
+                    charCard.style.position = 'relative'; // 🌟 Allow absolute icon positioning
                     let raceStr = char.race.toLowerCase(); let classStr = char.class.toLowerCase(); let genderStr = char.gender ? char.gender.toLowerCase() : "m";
                     let iconFile = `portrait_${raceStr}_${classStr}_${genderStr}.webp?v=${GAME_VERSION}`;
+
+                    let clsStyle = classStyleMap[char.class] || { color: "#555", icon: "" };
 
                     charCard.innerHTML = `
                         <div class="sm-item-icon" style="background-image:url('assets/${iconFile}'); border-radius: 50%; background-color:#000;"></div>
                         <div class="sm-item-details">
                             <div class="sm-item-name" style="display: flex; align-items: baseline; gap: 5px;">
                                 <span>${char.name}</span>
-                                <span style="font-size: 0.8rem; font-weight: normal; color: #555; white-space: nowrap;">(Lvl ${char.level} ${char.race} ${char.class})</span>
+                                <span style="font-size: 0.8rem; font-weight: normal; color: #555; white-space: nowrap;">(Lvl ${char.level} ${char.race} <span style="color: ${clsStyle.color}; font-weight: bold;">${char.class}</span>)</span>
                             </div>
                             <div class="sm-item-price" style="${canAfford ? 'color:#006600;' : 'color:#aa0000;'}">${desc}</div>
+                        </div>
+                        <div style="position: absolute; bottom: 4px; right: 8px; font-family: 'RPG Awesome'; font-size: 1.2rem; color: ${clsStyle.color}; opacity: 0.6; pointer-events: none;">
+                            ${clsStyle.icon}
                         </div>
                     `;
                     charCard.onclick = () => { openGuildInspector(char, `🤝 Hire (${hireCost} G)`, canAfford, () => {
@@ -7592,7 +7616,7 @@ window.renderShopMenu = function() {
         }
         return; // 🛑 EXIT EARLY! Do not render normal item shop logic!
     }
-	
+
     // ==========================================
     // 🛒 NORMAL SHOP MENU (Armoury, Potions, etc.)
     // ==========================================
@@ -7840,7 +7864,6 @@ window.renderShopMenu = function() {
         grid.innerHTML = `<div style="color:#555; text-align:center; padding:20px; font-style:italic;">${msg}</div>`;
     }
 };
-
 
 // Map the HTML Buttons (Reset to 'All' when switching between buy/sell!)
 document.getElementById('btn-sm-buy').onclick = () => { shopMode = 'buy'; window.setShopTab('All'); };
@@ -8796,32 +8819,8 @@ window.saveGame = async function() {
         return;
     }
 
-    // 3. Robust File Writing
-    if ('showSaveFilePicker' in window) {
-        let fileHandle;
-        try {
-            fileHandle = await window.showSaveFilePicker({
-                suggestedName: `lyrewight_save_${Date.now()}.json`,
-                types: [{ description: 'JSON Save File', accept: { 'application/json': ['.json'] } }],
-            });
-
-            const writable = await fileHandle.createWritable();
-            await writable.write(compressed);
-            await writable.close();
-
-            logMsg("<span style='color:#00aa00; font-weight:bold;'>Game Saved Successfully.</span>");
-
-        } catch (err) { 
-            if (err.name !== 'AbortError') {
-                console.error("Save failed:", err);
-                logMsg("<span style='color:#aa0000; font-weight:bold;'>Save Error: Failed to write to disk. Check console.</span>");
-            }
-        } finally {
-            // Always restore fullscreen
-            if (wasFullscreen) window.enterFullScreen();
-        }
-    } else {
-        // Fallback for older browsers using Blob
+    // 🌟 NEW: Extracted the fallback Blob download into a reliable helper function
+    const fallbackDownload = () => {
         try {
             const blob = new Blob([compressed], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -8839,7 +8838,43 @@ window.saveGame = async function() {
         } catch (err) {
             console.error("Download save failed:", err);
             logMsg("<span style='color:#aa0000; font-weight:bold;'>Save Error: Download failed.</span>");
+        } finally {
+            if (wasFullscreen) window.enterFullScreen();
         }
+    };
+
+    // 3. Robust File Writing
+    // 🌟 FIX: Detect Electron. FileSystemWritableFileStream is often blocked by Electron's security policy,
+    // resulting in the OS creating a blank file before throwing an error. We skip the picker if in Electron.
+    const isElectron = navigator.userAgent.toLowerCase().includes('electron');
+
+    if ('showSaveFilePicker' in window && !isElectron) {
+        let fileHandle;
+        try {
+            fileHandle = await window.showSaveFilePicker({
+                suggestedName: `lyrewight_save_${Date.now()}.json`,
+                types: [{ description: 'JSON Save File', accept: { 'application/json': ['.json'] } }],
+            });
+
+            const writable = await fileHandle.createWritable();
+            await writable.write(compressed);
+            await writable.close();
+
+            logMsg("<span style='color:#00aa00; font-weight:bold;'>Game Saved Successfully.</span>");
+            if (wasFullscreen) window.enterFullScreen();
+
+        } catch (err) { 
+            if (err.name !== 'AbortError') {
+                console.warn("SaveFilePicker failed, attempting fallback...", err);
+                // 🌟 FIX: If the picker fails to write (creates a 0-byte file), seamlessly fire the fallback!
+                fallbackDownload();
+            } else {
+                if (wasFullscreen) window.enterFullScreen();
+            }
+        }
+    } else {
+        // Fallback for older browsers and Electron executables using the standard Blob
+        fallbackDownload();
     }
 };
 
