@@ -1,7 +1,7 @@
 {
   "name": "lyre-wight",
   "productName": "Curse of the Lyre-Wight",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "author": "Toni Kuusela",
   "description": "A Retro Dungeon Crawler",
   "main": "main.js",

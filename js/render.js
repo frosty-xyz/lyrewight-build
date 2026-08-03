@@ -47,13 +47,18 @@ window.onAssetLoaded = function() {
         if (btn) btn.innerText = loadingText;
         if (btnGuild) btnGuild.innerText = loadingText;
     } else if (totalAssetsToLoad > 0) {
-        if (btn && btn.innerText.includes("Loading")) {
-            btn.innerText = "Start at Vaults"; 
-            btn.disabled = false;
-        }
-        if (btnGuild && btnGuild.innerText.includes("Loading")) {
-            btnGuild.innerText = "Start at Guild";
-            btnGuild.disabled = false;
+        if (window.atlasesLoaded) {
+            if (btn && btn.innerText.includes("Loading")) {
+                btn.innerText = "Start at Vaults"; 
+                btn.disabled = false;
+            }
+            if (btnGuild && btnGuild.innerText.includes("Loading")) {
+                btnGuild.innerText = "Start at Guild";
+                btnGuild.disabled = false;
+            }
+        } else {
+            if (btn) btn.innerText = "Loading Atlases...";
+            if (btnGuild) btnGuild.innerText = "Loading Atlases...";
         }
     }
 
@@ -63,6 +68,7 @@ window.onAssetLoaded = function() {
         if (typeof update === 'function') update();
     }
 };
+
 
 const forgeImg = new Image();
 totalAssetsToLoad++;
@@ -1851,9 +1857,20 @@ function drawMinimap() {
 function renderParty() {
     const listEl = document.getElementById('party-list');
 
-    // 🌟 UPDATED: Added inline padding-left to the NAME header to push it over the text
+    // 🌟 NEW: Class Styling Configuration mapped for the Roster
+    const classStyleMap = {
+        "Warrior": { color: "#a52a2a", icon: "&#59773;" }, // Sword
+        "Paladin": { color: "#8b6508", icon: "&#60054;" }, // Shield
+        "Rogue":   { color: "#2e8b57", icon: "&#59768;" }, // Bow
+        "Mage":    { color: "#0044aa", icon: "&#59830;" }, // Magic
+        "Healer":  { color: "#008000", icon: "&#59898;" }, // Heart
+        "Bard":    { color: "#cc5500", icon: "&#59899;" }, // Spark/Note
+        "Summon":  { color: "#aa44ff", icon: "&#xe9a5;" }  // Default Summon (Monster/Dragon)
+    };
+
+    // 🌟 UPDATED: Widened the final column (1.5fr) to fit the text + icon gracefully
     listEl.innerHTML = `
-        <div class="roster-header" style="grid-template-columns: 20px 30px 4fr 1fr 2.5fr 2.5fr 1fr;">
+        <div class="roster-header" style="grid-template-columns: 20px 30px 4fr 1fr 2.5fr 2.5fr 1.5fr;">
             <div></div><div class="col-num">#</div>
             <div style="padding-left: 60px;">NAME</div><div class="col-ac">AC</div>
             <div style="text-align:center;">HP</div><div style="text-align:center;">SP</div>
@@ -1864,7 +1881,7 @@ function renderParty() {
         const charEl = document.createElement('div');
         charEl.dataset.index = index;
         // 🌟 Ensure rows maintain the exact same column structure as the header
-        charEl.style.gridTemplateColumns = "20px 30px 4fr 1fr 2.5fr 2.5fr 1fr";
+        charEl.style.gridTemplateColumns = "20px 30px 4fr 1fr 2.5fr 2.5fr 1.5fr";
 
         if (char.name !== "Empty") {
             charEl.draggable = true; 
@@ -1906,6 +1923,31 @@ function renderParty() {
             let spHtml = hasSp ? `<div class="roster-bar-bg" title="${resLabel}: ${char.mp}/${char.maxMp}"><div class="roster-bar-fill" style="width:${spPct}%; background:${resColor};"></div><span class="roster-bar-text">${char.mp}/${char.maxMp}</span></div>` : ``;
             let aIcon = char.ailments && char.ailments.length > 0 ? `<span style="font-size: 0.9rem; margin-right: 4px;" title="${char.ailments.join(', ')}">${AILMENT_ICONS[char.ailments[0]] || '❓'}</span>` : '';
 
+            // 🌟 NEW: Format the Class string with correct colors and RPG Awesome icons
+            // Make a copy so we don't accidentally mutate the global classStyleMap!
+            let clsStyle = { ...(classStyleMap[char.class] || { color: "#5a2e0e", icon: "" }) };
+
+            // 🌟 DYNAMIC SUMMON ICONS BASED ON CATEGORY
+            if (char.isSummon && char.enemyData) {
+				let cat = char.enemyData.category || "monster";
+				
+				if (cat === "humanoid") {
+					clsStyle.icon = "&#xea48;"; 
+					clsStyle.color = "#4488ff";
+				} else if (cat === "beast") {
+					clsStyle.icon = "&#xea32;"; 
+					clsStyle.color = "#44aa44";
+				} else if (cat === "undead") {
+					clsStyle.icon = "&#xe98c;"; 
+					clsStyle.color = "#aa0000";
+				} else {
+					clsStyle.icon = "&#xe9a2;"; 
+					clsStyle.color = "#aa44ff";
+				}
+			}
+
+            let clHtml = `<span style="color: ${clsStyle.color};">${char.class.substring(0, 2)} <span style="font-family: 'RPG Awesome'; font-weight: normal; font-size: 1.2rem; vertical-align: middle;">${clsStyle.icon}</span></span>`;
+
             charEl.innerHTML = `
                 ${arrowsHtml}
                 <div class="col-num">${index+1}</div>
@@ -1918,7 +1960,7 @@ function renderParty() {
                     </div>
                 </div>
                 <div class="col-bar">${spHtml}</div>
-                <div class="col-cl">${char.class.substring(0, 2)}</div>
+                <div class="col-cl">${clHtml}</div>
             `;
         } else {
             charEl.draggable = false;

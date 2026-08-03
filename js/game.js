@@ -98,50 +98,68 @@ window.getSpriteDataUrl = function(filename) {
 
 window.loadBestiaryAtlases = async function() {
     const totalPacks = 8;
+    let promises = [];
     for (let i = 1; i <= totalPacks; i++) {
-        let packName = i === 1 ? 'bestiary' : `bestiary-${i}`;
-        try {
-            const res = await fetch(`assets/${packName}.json?v=${GAME_VERSION}`);
-            if (!res.ok) continue;
-            const data = await res.json();
+        promises.push((async () => {
+            let packName = i === 1 ? 'bestiary' : `bestiary-${i}`;
+            try {
+                const res = await fetch(`assets/${packName}.json?v=${GAME_VERSION}`);
+                if (!res.ok) return;
+                const data = await res.json();
 
-            let img = new Image();
-            img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
-            window.textureAtlasImages[data.meta.image] = img;
+                let img = new Image();
+                img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
+                window.textureAtlasImages[data.meta.image] = img;
 
-            data.frames.forEach(f => {
-                window.textureAtlas[f.filename] = { 
-                    image: img, 
-                    frame: f.frame 
-                };
-            });
-        } catch (e) {
-            console.warn(`Could not load ${packName}.json`, e);
-        }
+                await new Promise(resolve => {
+                    if (img.complete) resolve();
+                    else { img.onload = resolve; img.onerror = resolve; }
+                });
+
+                data.frames.forEach(f => {
+                    window.textureAtlas[f.filename] = { 
+                        image: img, 
+                        frame: f.frame 
+                    };
+                });
+            } catch (e) {
+                console.warn(`Could not load ${packName}.json`, e);
+            }
+        })());
     }
+    await Promise.all(promises);
     console.log("Bestiary Atlas Loaded.");
 };
 
 window.loadSpellAtlases = async function() {
     const packs = ['spells.json', 'spells-2.json'];
+    let promises = [];
     for (let pack of packs) {
-        try {
-            const res = await fetch(`assets/${pack}?v=${GAME_VERSION}`);
-            if (!res.ok) continue;
-            const data = await res.json();
+        promises.push((async () => {
+            try {
+                const res = await fetch(`assets/${pack}?v=${GAME_VERSION}`);
+                if (!res.ok) return;
+                const data = await res.json();
 
-            let img = new Image();
-            img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
-            window.spellTextureAtlasImages[data.meta.image] = img;
+                let img = new Image();
+                img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
+                window.spellTextureAtlasImages[data.meta.image] = img;
 
-            data.frames.forEach(f => {
-                window.spellTextureAtlas[f.filename] = { 
-                    image: img, 
-                    frame: f.frame 
-                };
-            });
-        } catch(e) { console.warn("Failed to load spell atlas pack:", pack); }
+                await new Promise(resolve => {
+                    if (img.complete) resolve();
+                    else { img.onload = resolve; img.onerror = resolve; }
+                });
+
+                data.frames.forEach(f => {
+                    window.spellTextureAtlas[f.filename] = { 
+                        image: img, 
+                        frame: f.frame 
+                    };
+                });
+            } catch(e) { console.warn("Failed to load spell atlas pack:", pack); }
+        })());
     }
+    await Promise.all(promises);
     console.log("Spell Atlas Loaded.");
 };
 
@@ -168,24 +186,33 @@ window.getAtlasSprite = function(filename) {
 window.loadItemAtlases = async function() {
     // Pack 1 (main) + Related packs updated to include all 8 sets
     const packs = ['items.json', 'items-2.json', 'items-3.json', 'items-4.json', 'items-5.json', 'items-6.json', 'items-7.json', 'items-8.json'];
+    let promises = [];
     for (let pack of packs) {
-        try {
-            const res = await fetch(`assets/${pack}?v=${GAME_VERSION}`);
-            if (!res.ok) continue;
-            const data = await res.json();
+        promises.push((async () => {
+            try {
+                const res = await fetch(`assets/${pack}?v=${GAME_VERSION}`);
+                if (!res.ok) return;
+                const data = await res.json();
 
-            let img = new Image();
-            img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
-            window.itemTextureAtlasImages[data.meta.image] = img;
+                let img = new Image();
+                img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
+                window.itemTextureAtlasImages[data.meta.image] = img;
 
-            data.frames.forEach(f => {
-                window.itemTextureAtlas[f.filename] = { 
-                    image: img, 
-                    frame: f.frame 
-                };
-            });
-        } catch(e) { console.warn("Failed to load item atlas pack:", pack); }
+                await new Promise(resolve => {
+                    if (img.complete) resolve();
+                    else { img.onload = resolve; img.onerror = resolve; }
+                });
+
+                data.frames.forEach(f => {
+                    window.itemTextureAtlas[f.filename] = { 
+                        image: img, 
+                        frame: f.frame 
+                    };
+                });
+            } catch(e) { console.warn("Failed to load item atlas pack:", pack); }
+        })());
     }
+    await Promise.all(promises);
     console.log("Item Atlas Loaded.");
 };
 
@@ -202,25 +229,34 @@ window.getItemAtlasSprite = function(filename) {
 window.loadDungeonAtlases = async function() {
     // There are 47 packs
     const totalPacks = 47;
+    let promises = [];
     for (let i = 1; i <= totalPacks; i++) {
-        let packName = i === 1 ? 'dungeons' : `dungeons-${i}`;
-        try {
-            const res = await fetch(`assets/${packName}.json?v=${GAME_VERSION}`);
-            if (!res.ok) continue;
-            const data = await res.json();
+        promises.push((async () => {
+            let packName = i === 1 ? 'dungeons' : `dungeons-${i}`;
+            try {
+                const res = await fetch(`assets/${packName}.json?v=${GAME_VERSION}`);
+                if (!res.ok) return;
+                const data = await res.json();
 
-            let img = new Image();
-            img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
-            window.dungeonTextureAtlasImages[data.meta.image] = img;
+                let img = new Image();
+                img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
+                window.dungeonTextureAtlasImages[data.meta.image] = img;
 
-            data.frames.forEach(f => {
-                window.dungeonTextureAtlas[f.filename] = { 
-                    image: img, 
-                    frame: f.frame 
-                };
-            });
-        } catch(e) { console.warn(`Failed to load dungeon atlas pack: ${packName}`, e); }
+                await new Promise(resolve => {
+                    if (img.complete) resolve();
+                    else { img.onload = resolve; img.onerror = resolve; }
+                });
+
+                data.frames.forEach(f => {
+                    window.dungeonTextureAtlas[f.filename] = { 
+                        image: img, 
+                        frame: f.frame 
+                    };
+                });
+            } catch(e) { console.warn(`Failed to load dungeon atlas pack: ${packName}`, e); }
+        })());
     }
+    await Promise.all(promises);
     console.log("Dungeon Atlas System Loaded.");
 };
 
@@ -236,25 +272,34 @@ window.getDungeonAtlasSprite = function(filename) {
 
 window.loadCityAtlases = async function() {
     const totalPacks = 19;
+    let promises = [];
     for (let i = 1; i <= totalPacks; i++) {
-        let packName = i === 1 ? 'cities' : `cities-${i}`;
-        try {
-            const res = await fetch(`assets/${packName}.json?v=${GAME_VERSION}`);
-            if (!res.ok) continue;
-            const data = await res.json();
+        promises.push((async () => {
+            let packName = i === 1 ? 'cities' : `cities-${i}`;
+            try {
+                const res = await fetch(`assets/${packName}.json?v=${GAME_VERSION}`);
+                if (!res.ok) return;
+                const data = await res.json();
 
-            let img = new Image();
-            img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
-            window.cityTextureAtlasImages[data.meta.image] = img;
+                let img = new Image();
+                img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
+                window.cityTextureAtlasImages[data.meta.image] = img;
 
-            data.frames.forEach(f => {
-                window.cityTextureAtlas[f.filename] = { 
-                    image: img, 
-                    frame: f.frame 
-                };
-            });
-        } catch(e) { console.warn(`Failed to load city atlas pack: ${packName}`, e); }
+                await new Promise(resolve => {
+                    if (img.complete) resolve();
+                    else { img.onload = resolve; img.onerror = resolve; }
+                });
+
+                data.frames.forEach(f => {
+                    window.cityTextureAtlas[f.filename] = { 
+                        image: img, 
+                        frame: f.frame 
+                    };
+                });
+            } catch(e) { console.warn(`Failed to load city atlas pack: ${packName}`, e); }
+        })());
     }
+    await Promise.all(promises);
     console.log("City Atlas System Loaded.");
 };
 
@@ -268,7 +313,29 @@ window.getCityAtlasSprite = function(filename) {
     return null;
 };
 
+// 🌟 NEW: PRELOAD ALL ATLASES IN BACKGROUND AT BOOT
+window.atlasesLoaded = false;
+window.preloadAllAtlasesPromise = (async function() {
+    let btnStart = document.getElementById('btn-start-game');
+    let btnGuild = document.getElementById('btn-start-guild');
+    if (btnStart) { btnStart.disabled = true; btnStart.innerText = "Loading Atlases..."; }
+    if (btnGuild) { btnGuild.disabled = true; btnGuild.innerText = "Loading Atlases..."; }
 
+    await Promise.all([
+        window.loadItemAtlases(),
+        window.loadBestiaryAtlases(),
+        window.loadSpellAtlases(),
+        window.loadDungeonAtlases(),
+        window.loadCityAtlases()
+    ]);
+
+    window.atlasesLoaded = true;
+
+    if (typeof totalAssetsToLoad !== 'undefined' && currentLoadedCount >= totalAssetsToLoad) {
+        if (btnStart) { btnStart.disabled = false; btnStart.innerText = "Start at Vaults"; }
+        if (btnGuild) { btnGuild.disabled = false; btnGuild.innerText = "Start at Guild"; }
+    }
+})();
 
 window.getCharPortrait = function(char) {
     if (char.name === "Empty") return 'assets/portrait_none_guest_m.webp?v=' + GAME_VERSION;
@@ -6753,28 +6820,28 @@ const AILMENT_COSTS = {
 };
 
 // 🌟 MASSIVE THEMATIC NAME DATABASE
-    const nameDB = {
-        "Human": {
-            "m":["Alden", "Garrick", "Jorn", "Rolan", "Kael", "Perrin", "Orik", "Bram", "Cael", "Tav", "Kester", "Vane", "Torin", "Balian", "Castor", "Dane", "Ewan", "Falk", "Galen", "Halett", "Ivor", "Jace", "Kellan", "Lucian", "Merrick"],
-            "f":["Hilda", "Dara", "Fiora", "Lyra", "Sila", "Mire", "Nyx", "Alys", "Bryn", "Cassia", "Delia", "Elen", "Faye", "Gwen", "Isolde", "Jeyne", "Kora", "Lirael", "Maeve", "Nola", "Orla", "Quin", "Rina", "Sybil", "Tessa"]
-        },
-        "Elf": {
-            "m":["Aelrond", "Faenor", "Theren", "Iliyar", "Sylas", "Elandorr", "Lorien", "Fenian", "Caron", "Alatar", "Beiro", "Carric", "Erdan", "Galin", "Heian", "Iannis", "Laucian", "Mindartis", "Paelias", "Quarion", "Riardon", "Soveliss", "Thamior", "Varis", "Zhoron"],
-            "f":["Caelynn", "Elenya", "Lia", "Sariel", "Naivara", "Faen", "Ilma", "Shava", "Anastrianna", "Antinua", "Birel", "Felosial", "Ielenia", "Keyleth", "Leshanna", "Meriele", "Mialee", "Quelenna", "Silaqui", "Theirastra", "Thia", "Vadania", "Valanthe", "Xanaphia", "Yael"]
-        },
-        "Dwarf": {
-            "m":["Brundir", "Kildrak", "Orsik", "Baern", "Eberk", "Traubon", "Ulfgar", "Adrik", "Brottor", "Dain", "Darrak", "Delg", "Einkil", "Fargrim", "Flint", "Gardain", "Harbek", "Morgran", "Orin", "Rangrim", "Rurik", "Taklinn", "Thoradin", "Tordek", "Vondal"],
-            "f":["Amber", "Diesa", "Eldeth", "Finellen", "Gunnloda", "Riswynn", "Mardred", "Gurdis", "Artin", "Audhild", "Bardryn", "Dagnal", "Falkrunn", "Helja", "Hlin", "Kathra", "Kristryd", "Ilde", "Liftrasa", "Sannl", "Torbera", "Torgga", "Vistra", "Dagnab", "Ruzza"]
-        },
-        "Halfling": {
-            "m":["Cade", "Garret", "Lyle", "Milo", "Osborn", "Roscoe", "Wellby", "Alton", "Ander", "Corrin", "Eldon", "Errich", "Galder", "Lindal", "Merric", "Nedrick", "Oribar", "Pim", "Quincy", "Reed", "Sanbal", "Tealeaf", "Ulmo", "Vandar", "Xander"],
-            "f":["Bree", "Callie", "Cora", "Euphemia", "Jillian", "Vani", "Lidda", "Merla", "Andry", "Charmaine", "Eida", "Kithri", "Lavinia", "Penny", "Nedda", "Paela", "Portia", "Robyn", "Rose", "Seraphina", "Shaena", "Trym", "Verna", "Wella", "Zira"]
-        },
-        "Vibrant": {
-            "m":["Lyrien", "Crescendo", "Harmon", "Timbre", "Canto", "Forte", "Chord", "Alto", "Rhythm", "Arpeggio", "Brio", "Clef", "Dorian", "Etude", "Falsetto", "Hymn", "Legato", "Motif", "Octave", "Presto", "Riff", "Solfege", "Tenor", "Vibrato", "Waltz"],
-            "f":["Melody", "Cadence", "Sonata", "Viola", "Octavia", "Rhapsody", "Lyric", "Allegra", "Bell", "Cantata", "Caprice", "Celesta", "Chanson", "Cleo", "Dissonance", "Echo", "Elegy", "Harmony", "Harper", "Lyrica", "Madrigal", "Minuet", "Muse", "Piper", "Symphony"]
-        }
-    };
+const nameDB = {
+	"Human": {
+		"m": ["Alden", "Garrick", "Jorn", "Rolan", "Kael", "Perrin", "Orik", "Bram", "Cael", "Tav", "Kester", "Vane", "Torin", "Balian", "Castor", "Dane", "Ewan", "Falk", "Galen", "Halett", "Ivor", "Jace", "Kellan", "Lucian", "Merrick", "Barnaby", "Colm", "Drake", "Emil", "Gideon", "Hadley", "Jareth", "Kendrick", "Lachlan", "Magnus", "Nolan", "Orson", "Quentin", "Rowan", "Soren", "Titus", "Ulric", "Vance", "Wyatt", "Zane", "Alaric", "Bastian", "Corbin", "Damon", "Gareth"],
+		"f": ["Dara", "Fiora", "Lyra", "Sila", "Mire", "Nyx", "Alys", "Bryn", "Cassia", "Delia", "Elen", "Faye", "Gwen", "Isolde", "Jeyne", "Kora", "Lirael", "Maeve", "Nola", "Orla", "Quin", "Rina", "Sybil", "Tessa", "Adela", "Beatrice", "Clara", "Diana", "Elena", "Freya", "Giselle", "Hazel", "Johanna", "Keira", "Lorelei", "Matilda", "Nora", "Ophelia", "Phoebe", "Rosalind", "Sabine", "Thea", "Una", "Vivienne", "Willa", "Xenia", "Yvaine", "Zelde"]
+	},
+	"Elf": {
+		"m": ["Aelrond", "Faenor", "Theren", "Iliyar", "Sylas", "Elandorr", "Lorien", "Fenian", "Caron", "Alatar", "Beiro", "Carric", "Erdan", "Heian", "Iannis", "Laucian", "Mindartis", "Paelias", "Quarion", "Riardon", "Soveliss", "Thamior", "Varis", "Zhoron", "Aelion", "Brambor", "Caelen", "Denthir", "Elidor", "Faelar", "Gildor", "Halas", "Ithil", "Kelvyn", "Lorian", "Mithral", "Naeris", "Orophin", "Peredhel", "Quenar", "Rilian", "Silvan", "Tilion", "Valandil", "Yavanna", "Zaphir", "Amras", "Beleg", "Caranthir"],
+		"f": ["Caelynn", "Elenya", "Lia", "Sariel", "Naivara", "Faen", "Ilma", "Shava", "Anastrianna", "Antinua", "Birel", "Felosial", "Ielenia", "Keyleth", "Leshanna", "Meriele", "Mialee", "Quelenna", "Silaqui", "Theirastra", "Thia", "Vadania", "Valanthe", "Xanaphia", "Yael", "Aelis", "Belenos", "Celebrian", "Elwing", "Fionn", "Glauriel", "Ithilien", "Luthien", "Morwen", "Nimloth", "Nimrodel", "Finduilas", "Galadriel", "Idril", "Melian", "Nienna", "Rian", "Tarie", "Varda", "Yavannild", "Amarië", "Eärwen", "Irimë", "Miriel", "Nerdanel"]
+	},
+	"Dwarf": {
+		"m": ["Brundir", "Kildrak", "Orsik", "Baern", "Eberk", "Traubon", "Ulfgar", "Adrik", "Brottor", "Dain", "Darrak", "Delg", "Einkil", "Fargrim", "Flint", "Gardain", "Harbek", "Morgran", "Orin", "Rangrim", "Rurik", "Taklinn", "Thoradin", "Tordek", "Vondal", "Walin", "Thili", "Qili", "Thoran", "Boin", "Cloin", "Bifur", "Bofur", "Bombar", "Dari", "Nuri", "Uori", "Thrar", "Threin", "Azaghâl", "Barin", "Gamli", "Hunding", "Mjoll", "Thar", "Ulf", "Varn", "Zar"],
+		"f": ["Amber", "Diesa", "Eldeth", "Finellen", "Gunnloda", "Riswynn", "Mardred", "Gurdis", "Artin", "Audhild", "Bardryn", "Dagnal", "Falkrunn", "Helja", "Hlin", "Kathra", "Kristryd", "Ilde", "Liftrasa", "Sannl", "Torbera", "Torgga", "Vistra", "Dagnab", "Ruzza", "Dis", "Dhís", "Berta", "Gilda", "Katha", "Mora", "Sif", "Thora", "Valka", "Astrid", "Bambi", "Dagmar", "Freydis", "Greta", "Helga", "Ingrid", "Karin", "Liv", "Matilda", "Olga", "Ragnhild", "Sigrid", "Tyra", "Ulrika"]
+	},
+	"Halfling": {
+		"m": ["Cade", "Garret", "Lyle", "Osborn", "Roscoe", "Wellby", "Alton", "Ander", "Corrin", "Eldon", "Errich", "Galder", "Lindal", "Merric", "Nedrick", "Oribar", "Pim", "Quincy", "Reed", "Sanbal", "Tealeaf", "Ulmo", "Vandar", "Xander", "Barnian", "Caspian", "Drugo", "Elmer", "Ferdinand", "Giles", "Hob", "Jasper", "Marmaduke", "Norbert", "Pip", "Rollo", "Samwise", "Tobias", "Wilfred", "Amos", "Bungo", "Cotman", "Falco", "Gerontius", "Hamfast", "Otho", "Ponto", "Tolman"],
+		"f": ["Bree", "Callie", "Cora", "Euphemia", "Jillian", "Vani", "Lidda", "Merla", "Andry", "Charmaine", "Eida", "Kithri", "Lavinia", "Penny", "Nedda", "Paela", "Portia", "Robyn", "Rose", "Seraphina", "Shaena", "Trym", "Verna", "Wella", "Zira", "Belladonna", "Daisy", "Eglantine", "Goldilocks", "Lavender", "Marigold", "Pearl", "Rosemary", "Ruby", "Salvia", "Tansy", "Amaranth", "Camellia", "Diamond", "Emerald", "Gilly", "Lobelia", "May", "Pansy", "Peony", "Poppy", "Primrose", "Violet"],
+	},
+	"Vibrant": {
+		"m": ["Lyrien", "Crescendo", "Harmon", "Timbre", "Canto", "Forte", "Chord", "Alto", "Rhythm", "Arpeggio", "Brio", "Clef", "Dorian", "Etude", "Falsetto", "Hymn", "Legato", "Motif", "Octave", "Presto", "Riff", "Solfege", "Tenor", "Vibrato", "Waltz", "Aria", "Bass", "Bolero", "Carillon", "Chime", "Clave", "Contrapunt", "Crotale", "Diapason", "Drone", "Gong", "Interval", "Largo", "Lute", "Maestro", "Modulation", "Pandean", "Plectrum", "Resonant", "Staccato", "Tabor", "Tympan", "Verse", "Zither"],
+		"f": ["Melody", "Cadence", "Sonata", "Viola", "Octavia", "Rhapsody", "Lyric", "Allegra", "Bell", "Cantata", "Caprice", "Celesta", "Chanson", "Cleo", "Dissonance", "Echo", "Elegy", "Harmony", "Harper", "Lyrica", "Madrigal", "Minuet", "Muse", "Piper", "Symphony", "Allemande", "Bagatelle", "Barcarolle", "Cavatina", "Chorale", "Cymbal", "Fanfare", "Fioritura", "Galliard", "Impromptu", "Kithara", "Litany", "Mélodie", "Nocturne", "Ocarina", "Pavan", "Prelude", "Sarabande", "Siren", "Sonatina", "Tambour", "Toccata", "Tutti", "Virelai", "Zingara"]
+	}
+};
 
 window.generateNewCharacter = function(race, charClass, level, forcedGender = null, forcedName = null) {
     const genders = ["m", "f"];
@@ -7212,7 +7279,6 @@ window.openGuildInspector = function(char, actionLabel, canAction, actionCallbac
     document.getElementById('guild-inspector-modal').style.display = 'flex';
 };
 
-
 window.renderShopMenu = function() {
     if (!activeShop) return;
 
@@ -7396,7 +7462,9 @@ window.renderShopMenu = function() {
                 if (char.name === "Empty" || char.isSummon) return; // 🌟 FILTERED SUMMONS
 
                 let xpNeeded = window.getXpCost(char.level); 
-                let canLevel = char.xp >= xpNeeded;
+                // 🌟 FIX: Block dead characters from leveling up!
+                let isDead = char.hp <= 0;
+                let canLevel = char.xp >= xpNeeded && !isDead;
 
                 // 🌟 NEW: Cumulative XP Display
                 let baseTotalXp = window.getBaseXp(char.level);
@@ -7404,7 +7472,14 @@ window.renderShopMenu = function() {
                 let displayNextXp = baseTotalXp + xpNeeded;
 
                 // Let's make the "Ready" message a bit cleaner since total numbers are high now!
-                let desc = canLevel ? `Ready to Level Up!` : `XP: ${displayXp} / ${displayNextXp}`;
+                let desc;
+                if (isDead) {
+                    desc = `Cannot train while dead!`;
+                } else if (canLevel) {
+                    desc = `Ready to Level Up!`;
+                } else {
+                    desc = `XP: ${displayXp} / ${displayNextXp}`;
+                }
 
                 addGuildCard(char, `${char.name} (Lvl ${char.level} ${char.class})`, desc, canLevel, "⬆️ Level Up", () => {
                     char.xp -= xpNeeded; // Deducts the exact cost, letting you keep the overflow!
@@ -7864,6 +7939,7 @@ window.renderShopMenu = function() {
         grid.innerHTML = `<div style="color:#555; text-align:center; padding:20px; font-style:italic;">${msg}</div>`;
     }
 };
+
 
 // Map the HTML Buttons (Reset to 'All' when switching between buy/sell!)
 document.getElementById('btn-sm-buy').onclick = () => { shopMode = 'buy'; window.setShopTab('All'); };
@@ -8409,11 +8485,11 @@ function tryLoadPNG(mapId, mapConfig) {
 }
 
 async function initializeGame() {      
-    await window.loadItemAtlases();
-    await window.loadBestiaryAtlases();
-    await window.loadSpellAtlases();
-    await window.loadDungeonAtlases(); 
-    await window.loadCityAtlases(); 
+    if (!window.atlasesLoaded) {
+        console.log("Waiting for atlases to finish preloading...");
+        await window.preloadAllAtlasesPromise;
+    }
+
     await loadExternalMapData(currentMapId);
     const mapData = worldMaps[currentMapId];
 
@@ -8938,6 +9014,9 @@ window.quickSave = function() {
 
 
 window.loadGame = async function(file) {
+    const loadingOverlay = document.getElementById('global-loading-screen');
+    if (loadingOverlay) loadingOverlay.style.display = 'flex';
+
     const reader = new FileReader();
     reader.onload = async (e) => {
         try {
@@ -9094,14 +9173,17 @@ window.loadGame = async function(file) {
                 logMsg("<span style='color:#00aa00; font-weight:bold;'>Game Loaded Successfully.</span>");
             }
             console.log("Load process complete.");
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
 
         } catch(err) {
             console.error("CRITICAL LOAD ERROR:", err);
             alert("Failed to load save file. Check console for details.");
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
         }
     };
     reader.readAsText(file);
 };
+
 
 window.quickLoad = async function() {
     let compressed = localStorage.getItem('lyrewight_quicksave');
@@ -9109,6 +9191,9 @@ window.quickLoad = async function() {
         logMsg("<span style='color:#aa0000;'>No quicksave found.</span>");
         return;
     }
+
+    const loadingOverlay = document.getElementById('global-loading-screen');
+    if (loadingOverlay) loadingOverlay.style.display = 'flex';
 
     try {
         let decompressed = LZString.decompressFromUTF16(compressed);
@@ -9205,9 +9290,11 @@ window.quickLoad = async function() {
         updateEffectsUI();
         window.refreshBanner();
         logMsg("<span style='color:#00aa00; font-weight:bold;'>Quickloaded successfully (F9).</span>");
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
     } catch (err) {
         console.error("Quickload failed", err);
         logMsg("<span style='color:#aa0000;'>Failed to load quicksave.</span>");
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
     }
 };
 
@@ -9466,15 +9553,27 @@ window.playIntroSequence = async function(startMode = 'vaults') {
         isStarted = true;
 
         window.fadeOutBgm();
-        introScreen.style.display = 'none';
+
+        // 🌟 CHANGE: Do not hide introScreen immediately. Show Loading text!
+        const btnSkip = document.getElementById('btn-skip-intro');
+        if (btnSkip) btnSkip.style.display = 'none';
+
+        const introBgContainer = document.getElementById('intro-bg-container');
+        if (introBgContainer) introBgContainer.style.opacity = 0; 
+
+        const introText = document.getElementById('intro-text');
+        if (introText) {
+            introText.innerHTML = "Loading Realm...";
+            introText.style.opacity = 1;
+        }
 
         // 🌟 RESET ALL PROGRESS DATA ON NEW GAME START
         unlockedCards = [];
-		localStorage.setItem('unlockedCards', JSON.stringify(unlockedCards));
-		window.townGatekeepersDefeated = [];
-		localStorage.setItem('townGatekeepersDefeated', JSON.stringify(window.townGatekeepersDefeated));
-		window.dungeonGuardians = {};	
-		window.applyStartingGear(window.gameStartMode);
+        localStorage.setItem('unlockedCards', JSON.stringify(unlockedCards));
+        window.townGatekeepersDefeated = [];
+        localStorage.setItem('townGatekeepersDefeated', JSON.stringify(window.townGatekeepersDefeated));
+        window.dungeonGuardians = {};   
+        window.applyStartingGear(window.gameStartMode);
 
         // 🌟 FIX: Populate the global party array depending on the start mode
         party.length = 0; // Clear it out completely
@@ -9483,7 +9582,7 @@ window.playIntroSequence = async function(startMode = 'vaults') {
             currentMapId = "barrowtown";
             player.x = 19; player.y = 11; player.dir = 1;
             sharedGold = 1000;
-		} else {
+        } else {
             // Generate full party for vaults start and commit it to the global scope
             let newParty = window.generateRandomParty();
             newParty.forEach(p => party.push(p));
@@ -9507,6 +9606,10 @@ window.playIntroSequence = async function(startMode = 'vaults') {
             if (window.isMusicEnabled() && worldMaps[currentMapId].bgm) {
                 window.playBgm(worldMaps[currentMapId].bgm);
             }
+
+            // 🌟 FINALLY hide the intro screen
+            const introScreen = document.getElementById('intro-screen');
+            if (introScreen) introScreen.style.display = 'none';
         } catch (err) {
             console.error("Failed to start game:", err);
             const btnStart = document.getElementById('btn-start-game');
@@ -9520,9 +9623,11 @@ window.playIntroSequence = async function(startMode = 'vaults') {
                 btnGuild.innerText = "Start at Guild";
                 btnGuild.style.display = 'block';
             }
+            document.getElementById('intro-screen').style.display = 'none';
             document.getElementById('start-screen').style.display = 'flex';
         }
     };
+
 
     btnSkip.onclick = finishIntro;
     introScreen.onclick = (e) => {

@@ -192,15 +192,12 @@ function recalculatePartyStats() {
             char.maxMp = 0;
         }
 
-        // Sync Current HP/MP
-        if (char.hp === 0) char.hp = char.maxHp;
-        if (char.maxMp > 0 && char.mp === 0) char.mp = char.maxMp;
-
-        // Ensure current MP doesn't exceed new max
+        // 🌟 FIX: Removed aggressive legacy auto-heal that resurrected dead members!
+        // We now solely ensure current HP/MP doesn't exceed the newly scaled maximums.
+        if (char.hp > char.maxHp) char.hp = char.maxHp;
         if (char.mp > char.maxMp) char.mp = char.maxMp;
     });
 }
-
 
 // Run this immediately when data.js loads!
 recalculatePartyStats();
