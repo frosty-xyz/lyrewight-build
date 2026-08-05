@@ -362,10 +362,13 @@ window.getCharPortrait = function(char) {
 
 
 window.getArticle = function(word) {
-    if (!word) return "A";
+    if (!word) return "a";
+    // 🌟 FIX: If the word is plural (ends in 's'), return empty string for proper grammar
+    if (word.toLowerCase().endsWith('s')) return "";
     // Check if the first character is a vowel
-    return "aeiou".includes(word.charAt(0).toLowerCase()) ? "An" : "A";
+    return "aeiou".includes(word.charAt(0).toLowerCase()) ? "an" : "a";
 };
+
 
 window.getEffectiveStat = function(statValue) {
     if (statValue <= 18) {
@@ -3780,7 +3783,7 @@ async function enemyTurn() {
         if (e.data.category === 'undead' && target.combatBuffs && target.combatBuffs.some(b => b.type === 'undeadResist')) {
             let blocked = finalDmg - Math.floor(finalDmg * 0.5);
             finalDmg = Math.floor(finalDmg * 0.5);
-            logMsg(`<span style="color:#fada5e; font-style:italic;">Aegis of Light repels the undead, absorbing ${blocked} damage!</span>`);
+            logMsg(`<span style="color:#b8860b; font-style:italic;">Aegis of Light repels the undead, absorbing ${blocked} damage!</span>`);
         }
 
         if (finalDmg <= 0) { 
@@ -3824,7 +3827,7 @@ async function enemyTurn() {
             let newAilment = getAilmentFromAttack(attackName);
             if (newAilment && !target.ailments.includes(newAilment)) {
                 if (target.combatBuffs && target.combatBuffs.some(b => b.type === 'wight_ward')) {
-                    logMsg(`<span style="color:#fada5e; font-style:italic;">Aegis of the Maestro perfectly shields ${targetName} from the affliction!</span>`);
+                    logMsg(`<span style="color:#b8860b; font-style:italic;">Aegis of the Maestro perfectly shields ${targetName} from the affliction!</span>`);
                 } else if (target.race === 'Vibrant' && (newAilment === 'Poison' || newAilment === 'Disease')) {
                     logMsg(`<span style="color:#888; font-style:italic;">${targetName}'s bronze body resists the ${newAilment}!</span>`);
                 } else {
@@ -4650,7 +4653,10 @@ window.enterHouse = function(fX, fY) {
     let descEl = document.getElementById('house-desc');
 
     if (msg) {
-        titleEl.innerText = `You found a ${msg.msgType}!`;
+        // 🌟 FIX: Use the getArticle helper to check for pluralization
+        let article = window.getArticle(msg.msgType);
+        let articleStr = article ? article + " " : "";
+        titleEl.innerText = `You found ${articleStr}${msg.msgType}!`;
         descEl.innerText = `It appears to be ${msg.desc.charAt(0).toLowerCase() + msg.desc.slice(1)}`;
     } else {
         titleEl.innerText = "Empty House";
@@ -4674,7 +4680,7 @@ window.enterHouse = function(fX, fY) {
         dungeonLevel = oldLevel;
     }
 
-	tickTime();
+    tickTime();
     if (typeof update === 'function') update();
 };
 
@@ -4686,7 +4692,10 @@ window.updateHouseUI = function() {
     if (msg) {
         // 🌟 NEW: Announcement logic to prevent spam
         if (!msg.announced) {
-            logMsg(`You found a ${msg.msgType}. ${msg.desc}`);
+            // 🌟 FIX: Use getArticle helper to fix grammar for plural/vowel words
+            let article = window.getArticle(msg.msgType);
+            let articleString = article ? article + " " : "";
+            logMsg(`You found ${articleString}${msg.msgType}. ${msg.desc}`);
             msg.announced = true;
         }
 
@@ -4732,7 +4741,6 @@ window.updateHouseUI = function() {
         msgBtn.style.display = 'none';
     }
 };
-
 
 window.leaveHouse = function() {
     window.isInsideHouse = false;
@@ -5079,7 +5087,7 @@ window.openItemModal = function(actionData) {
     if (item.resistAoE) statsHtml += `<div style="color:#8b6508;"><b>Effect:</b> Resists Dragon Breath & AoE</div>`;
     if (item.isBeacon) statsHtml += `<div style="color:#aa44ff;"><b>Effect:</b> Allows Teleportation</div>`;
     if (item.permanentSong) statsHtml += `<div style="color:#00aa00;"><b>Effect:</b> Bard Songs Last Forever</div>`;
-    if (item.permanentLight) statsHtml += `<div style="color:#fada5e;"><b>Effect:</b> Torches Never Expire</div>`;
+    if (item.permanentLight) statsHtml += `<div style="color:#b8860b;"><b>Effect:</b> Torches Never Expire</div>`;
     if (item.levitation) statsHtml += `<div style="color:#4488ff;"><b>Effect:</b> Levitates over Pit Traps</div>`;
 
     // Class Restrictions
@@ -5202,7 +5210,7 @@ window.openItemModal = function(actionData) {
             sliderZone.style.display = 'none'; slider.value = 1;
         }
         let sellPrice = Math.max(1, Math.floor(item.value * 0.5));
-        btnBox.innerHTML = `<button id="im-modal-action-btn" onclick="executeItemAction('shopsell', '${payload}', document.getElementById('im-drop-slider').value)" style="grid-column: span 2; height: 50px; background:#fada5e; color:#000;">💰 Sell (${sellPrice} G)</button>`;
+        btnBox.innerHTML = `<button id="im-modal-action-btn" onclick="executeItemAction('shopsell', '${payload}', document.getElementById('im-drop-slider').value)" style="grid-column: span 2; height: 50px; background:#b8860b; color:#000;">💰 Sell (${sellPrice} G)</button>`;
     } else {
         // NORMAL INVENTORY MODE        
         let btnText = "🎒 Equip";
@@ -7775,7 +7783,7 @@ window.renderShopMenu = function() {
             let card = document.createElement('div');
             card.className = `sm-item-card ${canAfford ? '' : 'disabled'}`; 
             card.innerHTML = `
-                <div class="sm-item-icon" style="background-image:url('${window.getSpriteDataUrl('item_drink_ale.webp')}'); border-radius: 50%; border: 2px solid #fada5e;"></div>
+                <div class="sm-item-icon" style="background-image:url('${window.getSpriteDataUrl('item_drink_ale.webp')}'); border-radius: 50%; border: 2px solid #b8860b;"></div>
                 <div class="sm-item-details">
                     <div class="sm-item-name">Buy a Round of Drinks (Gossip)</div>
                     <div class="sm-item-price" style="${canAfford ? '' : 'color:#aa0000;'}">Cost: ${gossipCost} G</div>
@@ -8737,7 +8745,7 @@ window.triggerForgeInteraction = function(ent) {
             btn.style.filter = "grayscale(1)";
             btn.style.cursor = "not-allowed";
         } else {
-            btn.style.border = isVibrantBard ? '2px solid #fada5e' : '1px solid rgba(139, 69, 19, 0.3)';
+            btn.style.border = isVibrantBard ? '2px solid #b8860b' : '1px solid rgba(139, 69, 19, 0.3)';
         }
 
         let portrait = window.getCharPortrait(p);

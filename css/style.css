@@ -166,27 +166,27 @@ button:disabled {
 /* The Header Row */
 .roster-header { 
     display: grid; 
-    grid-template-columns: 20px 20px 2.5fr 0.8fr 2fr 2fr 0.8fr; 
+    grid-template-columns: 20px 30px 4fr 1fr 2.5fr 2.5fr 1.5fr; 
     gap: 5px; align-items: center;
     color: #5a2e0e; border-bottom: 2px solid #8b4513; 
-    
+
     /* 🌟 Slimmed margin and padding beneath the header */
     margin-bottom: 3px; padding-bottom: 3px; 
-    
+
     font-family: 'Georgia', serif; font-weight: bold; font-size: 1.3rem;
 }
 
 /* The Character Row */
 .character { 
     display: grid; 
-    grid-template-columns: 20px 20px 2.5fr 0.8fr 2fr 2fr 0.8fr; 
+    grid-template-columns: 20px 30px 4fr 1fr 2.5fr 2.5fr 1.5fr; 
     gap: 5px; align-items: center;
-    
+
     /* 🌟 Slimmed padding from 8px down to 3px to fit all 7 rows! */
     padding: 2px 0; 
     border-bottom: 1px solid rgba(139, 69, 19, 0.3); 
     position: relative; 
-    
+
     color: #221100; 
     font-family: 'Georgia', serif; 
     font-weight: bold; 
@@ -221,17 +221,27 @@ button:disabled {
 
 /* 🌟 TALLER BARS WITH BIGGER TEXT */
 .roster-bar-bg {
-    width: 100%; height: 22px; /* Taller bar */
-    background: #222; border: 1px solid #5a2e0e; 
-    position: relative; box-shadow: inset 0 0 3px #000;
-    border-radius: 2px; overflow: hidden;
+    width: 100%; height: 22px; 
+    background: #111; 
+    border: 1px solid #3d2b1f; 
+    position: relative; 
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+    border-radius: 8px; 
+    overflow: hidden;
 }
-.roster-bar-fill { height: 100%; transition: width 0.3s, background 0.3s; }
+.roster-bar-fill { 
+    height: 100%; 
+    transition: width 0.3s, background-color 0.3s; 
+    border-radius: 6px;
+    /* This adds the glossy shaded look */
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.25), rgba(0,0,0,0.25));
+}
 .roster-bar-text {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    color: #fff; font-size: 1rem; /* Bigger, clearer numbers inside the bars */
+    color: #fff; font-size: 1rem; 
     text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
     font-family: 'Courier New', Courier, monospace; font-weight: bold; letter-spacing: -0.5px;
+    pointer-events: none;
 }
 
 /* Arrows */
@@ -258,7 +268,7 @@ button:disabled {
 .legend-item { display: flex; align-items: center; gap: 5px; } .legend-color { width: 10px; height: 10px; border: 1px solid #333; }
 .legend-item:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #fada5e;
+    color: #b8860b;
 }
 
 .log-entry { margin-bottom: 8px; } .log-vibrant { color: #900; } .log-system { color: #666; font-style: italic; font-size: 0.95rem; }
@@ -269,8 +279,8 @@ button { background: #ccc; color: #000; border-style: solid; border-width: 4px; 
 button:active { border-color: #666 #fff #fff #666; background: #aaa; }
 button:disabled { filter: grayscale(100%) opacity(0.5); cursor: not-allowed; }
 .btn-empty { visibility: hidden; }
-#btn-interact { background: #444; color: #fada5e; border-color: #fada5e #886600 #886600 #fada5e; }
-#btn-interact:active { background: #222; border-color: #886600 #fada5e #fada5e #886600; }
+#btn-interact { background: #444; color: #b8860b; border-color: #b8860b #886600 #886600 #b8860b; }
+#btn-interact:active { background: #222; border-color: #886600 #b8860b #b8860b #886600; }
 
 /* ================= INTRO CUTSCENE ================= */
 @keyframes kenburns {
@@ -392,11 +402,11 @@ button:disabled { filter: grayscale(100%) opacity(0.5); cursor: not-allowed; }
     z-index: 2; 
 }
 
-.item-slot:hover { border-color: #fada5e; }
+.item-slot:hover { border-color: #b8860b; }
 .item-slot.empty { background: #444; }
 
 /* Drag and Drop Item Feedback */
-.item-slot.dragging { opacity: 0.4; border-color: #fada5e; transform: scale(0.9); }
+.item-slot.dragging { opacity: 0.4; border-color: #b8860b; transform: scale(0.9); }
 .item-slot.drag-over { border-color: #00ff00; box-shadow: inset 0 0 15px rgba(0,255,0,0.5); }
 .item-icon, .item-qty, .placeholder-icon { pointer-events: none; } /* Prevents drag jitter */
 
@@ -458,13 +468,13 @@ button:disabled { filter: grayscale(100%) opacity(0.5); cursor: not-allowed; }
 }
 
 .bf-sprite.active {
-    filter: drop-shadow(0 0 8px #fada5e);
+    filter: drop-shadow(0 0 8px #b8860b);
     transform: translateY(-5px);
 }
 
 .bf-sprite.active::after {
     content: "▼";
-    color: #fada5e;
+    color: #b8860b;
     position: absolute;
     top: -20px;
     left: 50%;
@@ -555,13 +565,13 @@ button:disabled { filter: grayscale(100%) opacity(0.5); cursor: not-allowed; }
 
 /* ================= SHOP UI MODAL ================= */
 .shop-tab-btn { background: #8b4513; color: #fff; border-color: #d2b48c #4a2509 #4a2509 #d2b48c; opacity: 0.6; }
-.shop-tab-btn.active { opacity: 1; background: #5a2e0e; border-color: #fada5e #221100 #221100 #fada5e; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); transform: scale(0.98); }
+.shop-tab-btn.active { opacity: 1; background: #5a2e0e; border-color: #b8860b #221100 #221100 #b8860b; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); transform: scale(0.98); }
 
 .sm-item-card {
     display: flex; gap: 10px; background: rgba(0,0,0,0.05); border: 2px solid #a89475; 
     padding: 6px; cursor: pointer; transition: all 0.1s; border-radius: 4px; align-items: center;
 }
-.sm-item-card:hover { border-color: #fada5e; background: rgba(0,0,0,0.15); transform: scale(1.02); }
+.sm-item-card:hover { border-color: #b8860b; background: rgba(0,0,0,0.15); transform: scale(1.02); }
 .sm-item-card.disabled { opacity: 0.5; filter: grayscale(100%); cursor: not-allowed; }
 
 .sm-item-icon { width: 48px; height: 48px; background-size: contain; background-position: center; background-repeat: no-repeat; flex-shrink: 0; background-color: #000; border: 2px solid #5a2e0e; border-radius: 4px; box-shadow: inset 0 0 10px #000;  }

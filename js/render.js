@@ -1596,7 +1596,7 @@ function drawMinimap() {
 
                 if (ent.type === 'message' && ent.isDetected) {
                     legendItems.message = true;
-                    mctx.fillStyle = '#fada5e';
+                    mctx.fillStyle = '#b8860b';
                     mctx.fillRect(eX, eY, eS, eS);
                     mctx.strokeStyle = '#000';
                     mctx.lineWidth = 1;
@@ -1620,7 +1620,7 @@ function drawMinimap() {
                     mctx.fillText('★', rX * cellSize + cellSize/2 - camX, rY * cellSize + cellSize/2 - camY + 2);
                 }
                 else if (ent.type === 'chest') {
-                    if (ent.state === 'closed') { mctx.fillStyle = '#fada5e'; legendItems.chestC = true; } 
+                    if (ent.state === 'closed') { mctx.fillStyle = '#b8860b'; legendItems.chestC = true; } 
                     else { mctx.fillStyle = '#8b6508'; legendItems.chestO = true; } 
                     mctx.fillRect(eX, eY, eS, eS);
                     mctx.strokeRect(eX, eY, eS, eS); 
@@ -1801,7 +1801,7 @@ function drawMinimap() {
     if (legendItems.dungeonEntrance) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:#444444;"></div>Dungeon Walls</div>`;
     if (legendItems.doorC) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:#8b4513;"></div>Closed Door</div>`;
     if (legendItems.doorO) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:#deb887;"></div>Open Door</div>`;
-    if (legendItems.chestC) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:#fada5e;"></div>Loot</div>`;
+    if (legendItems.chestC) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:#b8860b;"></div>Loot</div>`;
     if (legendItems.chestO) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:#8b6508;"></div>Looted</div>`;
     if (legendItems.enemy) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:#cc0000; border-radius:50%;"></div>Monster</div>`; 
     if (legendItems.transition) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:#4488ff; border: 1px solid #fff; display:flex; justify-content:center; align-items:center;"><div style="width:50%; height:50%; background:#000;"></div></div>Stairs/Ladder</div>`;
@@ -1817,7 +1817,7 @@ function drawMinimap() {
 	if (legendItems.antiMagic) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:rgba(75, 0, 130, 0.7); border:1px solid #fff;"></div>Anti-Magic</div>`;
 	if (legendItems.silence) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:rgba(100, 100, 100, 0.7); border:1px solid #fff;"></div>Silence</div>`;
 	if (legendItems.trapDoor) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:#5d4037; border: 1px solid #4488ff;"><div style="width:50%; height:50%; background:#4488ff; margin:25%;"></div></div>Trap Door</div>`;
-	if (legendItems.message) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:#fada5e; border:1px solid #000; color:#000; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:7px;">?</div>Unknown</div>`;
+	if (legendItems.message) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:#b8860b; border:1px solid #000; color:#000; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:7px;">?</div>Unknown</div>`;
     if (legendItems.quest) legHtml += `<div class="legend-item" style="${itemStyle}"><div class="legend-color" style="${smallIconSize} background:transparent; color:#FFD700; text-shadow: 1px 1px 1px #000; font-size:12px; display:flex; justify-content:center; align-items:center;">★</div>Quest Item</div>`;
 
     Object.keys(legendItems.shops).forEach(name => {
@@ -1852,7 +1852,6 @@ function drawMinimap() {
         legEl.innerHTML = legHtml;
     }
 }
-
 
 function renderParty() {
     const listEl = document.getElementById('party-list');
@@ -1920,17 +1919,16 @@ function renderParty() {
             let spPct = hasSp ? Math.max(0, (char.mp / char.maxMp) * 100) : 0;
             let resLabel = char.class === 'Bard' ? 'Songs' : 'SP';
             let resColor = char.class === 'Bard' ? '#cc5500' : '#0044aa';
-            let spHtml = hasSp ? `<div class="roster-bar-bg" title="${resLabel}: ${char.mp}/${char.maxMp}"><div class="roster-bar-fill" style="width:${spPct}%; background:${resColor};"></div><span class="roster-bar-text">${char.mp}/${char.maxMp}</span></div>` : ``;
+            let spHtml = hasSp ? `<div class="roster-bar-bg" title="${resLabel}: ${char.mp}/${char.maxMp}"><div class="roster-bar-fill" style="width:${spPct}%; background-color:${resColor};"></div><span class="roster-bar-text">${char.mp}/${char.maxMp}</span></div>` : ``;
             let aIcon = char.ailments && char.ailments.length > 0 ? `<span style="font-size: 0.9rem; margin-right: 4px;" title="${char.ailments.join(', ')}">${AILMENT_ICONS[char.ailments[0]] || '❓'}</span>` : '';
 
             // 🌟 NEW: Format the Class string with correct colors and RPG Awesome icons
-            // Make a copy so we don't accidentally mutate the global classStyleMap!
             let clsStyle = { ...(classStyleMap[char.class] || { color: "#5a2e0e", icon: "" }) };
 
             // 🌟 DYNAMIC SUMMON ICONS BASED ON CATEGORY
             if (char.isSummon && char.enemyData) {
 				let cat = char.enemyData.category || "monster";
-				
+
 				if (cat === "humanoid") {
 					clsStyle.icon = "&#xea48;"; 
 					clsStyle.color = "#4488ff";
@@ -1955,7 +1953,7 @@ function renderParty() {
                 <div class="col-ac">${totalAc}</div>
                 <div class="col-bar">
                     <div class="roster-bar-bg" title="HP: ${char.hp}/${char.maxHp}">
-                        <div class="roster-bar-fill" style="width:${hpPct}%; background:${hpColor};"></div>
+                        <div class="roster-bar-fill" style="width:${hpPct}%; background-color:${hpColor};"></div>
                         <span class="roster-bar-text">${char.hp}/${char.maxHp}</span>
                     </div>
                 </div>
@@ -2202,7 +2200,7 @@ window.renderBigMapCanvas = function() {
                 else {
                     if (ent.type === 'message' && ent.isDetected) {
                         legendItems.message = true;
-                        bctx.fillStyle = '#fada5e';
+                        bctx.fillStyle = '#b8860b';
                         bctx.fillRect(eX + eS*0.25, eY + eS*0.25, eS*0.5, eS*0.5);
                         bctx.strokeStyle = '#000';
                         bctx.lineWidth = 1;
@@ -2226,7 +2224,7 @@ window.renderBigMapCanvas = function() {
                         bctx.fillText('★', eX + eS/2, eY + eS/2 + 2);
                     }
                     else if (ent.type === 'chest') {
-                        if (ent.state === 'closed') { bctx.fillStyle = '#fada5e'; legendItems.chestC = true; } 
+                        if (ent.state === 'closed') { bctx.fillStyle = '#b8860b'; legendItems.chestC = true; } 
                         else { bctx.fillStyle = '#8b6508'; legendItems.chestO = true; } 
                         bctx.fillRect(eX + eS*0.25, eY + eS*0.25, eS*0.5, eS*0.5);
                         bctx.strokeRect(eX + eS*0.25, eY + eS*0.25, eS*0.5, eS*0.5); 
@@ -2363,7 +2361,7 @@ window.renderBigMapLegend = function(legendItems) {
     if (legendItems.dungeonEntrance) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:#444444;"></div>Dungeon Walls</div>`;
     if (legendItems.doorC) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:#8b4513;"></div>Closed Door</div>`;
     if (legendItems.doorO) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:#deb887;"></div>Open Door</div>`;
-    if (legendItems.chestC) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:#fada5e;"></div>Loot</div>`;
+    if (legendItems.chestC) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:#b8860b;"></div>Loot</div>`;
     if (legendItems.chestO) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:#8b6508;"></div>Looted</div>`;
     if (legendItems.enemy) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:#cc0000; border-radius:50%;"></div>Monster</div>`; 
     if (legendItems.transition) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:#4488ff; border: 2px solid #fff; display:flex; justify-content:center; align-items:center;"><div style="width:50%; height:50%; background:#000;"></div></div>Stairs/Ladder</div>`;
@@ -2376,7 +2374,7 @@ window.renderBigMapLegend = function(legendItems) {
     if (legendItems.antiMagic) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:rgba(75, 0, 130, 0.7); border:1px solid #fff;"></div>Anti-Magic</div>`;
     if (legendItems.silence) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:rgba(100, 100, 100, 0.7); border:1px solid #fff;"></div>Silence</div>`;
     if (legendItems.trapDoor) { legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:#5d4037; border: 1px solid #4488ff; display:flex; justify-content:center; align-items:center;"><div style="width:50%; height:50%; background:#4488ff;"></div></div>Trap Door</div>`; }
-    if (legendItems.message) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:#fada5e; border:1px solid #000; color:#000; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:16px;">?</div>Unknown</div>`;
+    if (legendItems.message) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:#b8860b; border:1px solid #000; color:#000; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:16px;">?</div>Unknown</div>`;
 
     // 🌟 Added Quest Item legend entry
     if (legendItems.quest) legHtml += `<div class="legend-item"><div class="legend-color" style="${iconSize} background:transparent; color:#FFD700; text-shadow: 1px 1px 1px #000; font-size:20px; display:flex; justify-content:center; align-items:center;">★</div>Quest Item</div>`;
