@@ -9,7 +9,7 @@
     "start": "electron .",
     "build": "electron-builder --win --x64",
     "build-mac": "electron-builder --mac",
-    "build-linux": "electron-builder --linux --docker"
+    "build-linux": "electron-builder --linux"
 	},
   "build": {
     "appId": "com.lyrewight.game",
