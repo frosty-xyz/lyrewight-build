@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lyre-Wight Map Entity Helper</title>
+    <link rel="icon" href="data:,"> 
+    <style>
+        @font-face {
+			font-family: 'Almendra';
+			src: url('../assets/fonts/Almendra-Regular.ttf') format('truetype');
+		}
+
+		@font-face {
+			font-family: 'Eagle Lake';
+			src: url('../assets/fonts/EagleLake-Regular.ttf') format('truetype');
+		}
+		
+		@font-face {
+			font-family: 'Parisienne';
+			src: url('../assets/fonts/Parisienne-Regular.ttf') format('truetype');
+		}
+		
+		body { font-family: 'Georgia', serif; background: #e8dcc4; padding: 20px; color: #332211; }
+        #canvas-wrapper { position: relative; display: inline-block; cursor: crosshair; border: 4px solid #5a2e0e; }
+        .controls { background: #332211; color: #e8dcc4; padding: 15px; margin-bottom: 10px; border-radius: 4px; }
+        #output { width: 100%; height: 200px; margin-top: 20px; font-family: monospace; background: #222; color: #fff; padding: 10px; }
+
+        #mapCanvas { 
+            background: #000; 
+            cursor: crosshair; 
+            image-rendering: -moz-crisp-edges; 
+            image-rendering: pixelated;    
+        }
+
+        #edit-fields input { padding: 5px; }
+        .move-mode { cursor: crosshair !important; outline: 3px solid cyan; }
+    </style>
+</head>
+<body>
+    <h1>Map Entity Generator</h1>
+    <div class="controls">
+        Mode: <select id="modeSelect" onchange="updateTypeOptions()">
+            <option value="dungeon">Dungeon</option>
+            <option value="town">Town</option>
+			<option value="wilderness">Wilderness</option>
+        </select>
+        Map: <select id="mapSelect" onchange="loadMap()"><option value="">Select a map...</option></select>
+        Entity: <select id="typeSelect"></select>
+        <span id="trapLevelWrapper" style="display:none;">
+            Level: <select id="trapLevelSelect">
+                <script>
+                    for(let i=1; i<=10; i++) document.write(`<option value="${i}">${i}</option>`);
+                </script>
+            </select>
+        </span>
+        <span id="shopTypeWrapper" style="display:none;">
+            Shop: <select id="shopTypeSelect">
+                <option value="armoury">Armoury</option>
+                <option value="potion_maker">Potion Maker</option>
+                <option value="spell_shop">Spell Shop</option>
+                <option value="instrument_shop">Instruments</option>
+                <option value="bowyer">Bowyer</option>
+                <option value="general_store">General Store</option>
+                <option value="tavern">Tavern</option>
+                <option value="guild_hall">Guild Hall</option>
+            </select>
+        </span>
+        <button onclick="clearEntities()" style="background: #aa4444; color: white;">Clear All Entities</button>
+    </div>
+    <div id="canvas-wrapper">
+        <canvas id="mapCanvas"></canvas>
+    </div>
+    <textarea id="output" placeholder="Paste your existing entity JSON here to edit it..."></textarea>
+
+    <!-- Edit Overlay -->
+    <div id="edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; overflow-y:auto;">
+        <div style="background: #e8dcc4; padding: 20px; border: 4px solid #332211; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;">
+            <h2 id="edit-title">Edit Entity</h2>
+            <div id="edit-fields" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+            <!-- Shop Preview Canvas -->
+            <div id="shop-preview-box" style="display:none; margin-top: 15px; border: 2px solid #332211;">
+                <canvas id="shopPreviewCanvas" width="400" height="400" style="width: 100%; background: #000;"></canvas>
+            </div>
+
+            <div style="margin-top: 15px; display: flex; gap: 5px;">
+                <button onclick="saveEdit()" style="background: green; color:white;">Save</button>
+                <button onclick="initiateMove()" style="background: blue; color:white;">Move</button>
+                <button onclick="deleteEdit()" style="background: red; color:white;">Delete</button>
+                <button onclick="document.getElementById('edit-modal').style.display='none'">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>    
+    let canvas, ctx, mapSelect, output;
+    let entities = [];
+    let pendingTeleporter = null;
+    let img = new Image();
+    let cellSize = 32;
+    let editingEntity = null;
+    let moveMode = false;
+
+	const shopDefaults = {
+		exterior: "shop_front_generic.webp",
+		interior: "shop_interior_generic.webp",
+		textX: 0.5,
+		textY: 0.315,
+		fontSizeMult: 0.045,
+		fontFamily: "'Georgia', serif",
+		textColor: "#221100",
+		shadowColor: "#000000",
+		shadowX: 1, 
+		shadowY: 1,
+		highlightColor: "#ffffff",
+		highlightX: -1,
+		highlightY: -1,
+		signText: "Shop Name",
+		shopAppearance: "",
+		desc: "",
+		welcomeMsg: ""
+	};
+	
+	function toggleColorInput(key) {
+		const enabled = document.getElementById('enable_' + key).checked;
+		document.getElementById('edit_' + key).disabled = !enabled;
+		renderShopPreview();
+	}
+
+    function updateTypeOptions() {
+        const mode = document.getElementById('modeSelect').value;
+        const typeSelect = document.getElementById('typeSelect');
+        const trapWrapper = document.getElementById('trapLevelWrapper');
+        const shopTypeWrapper = document.getElementById('shopTypeWrapper');
+
+        typeSelect.innerHTML = '';
+        trapWrapper.style.display = 'none';
+        shopTypeWrapper.style.display = 'none';
+
+        if (mode === 'dungeon') {
+            const dungeonOpts = ['dungeon_gate', 'chest', 'trap', 'spinner', 'teleporter', 'transition_up', 'transition_down', 'darkness', 'anti_magic', 'silence', 'trap_door', 'message'];
+            dungeonOpts.forEach(opt => typeSelect.innerHTML += `<option value="${opt}">${opt}</option>`);
+            typeSelect.onchange = () => { 
+                trapWrapper.style.display = (typeSelect.value === 'trap') ? 'inline' : 'none';
+                transWrapper.style.display = (typeSelect.value === 'transition') ? 'inline' : 'none';
+            };
+        } else if (mode === 'town') {
+            const townOpts = ['shop', 'gate', 'message'];
+            townOpts.forEach(opt => typeSelect.innerHTML += `<option value="${opt}">${opt}</option>`);
+            typeSelect.onchange = () => { shopTypeWrapper.style.display = (typeSelect.value === 'shop') ? 'inline' : 'none'; };
+        } else if (mode === 'wilderness') {
+            const wildOpts = ['town_footprint', 'dungeon_entrance', 'transition', 'dungeon_gate'];
+            wildOpts.forEach(opt => typeSelect.innerHTML += `<option value="${opt}">${opt}</option>`);
+        }
+    }
+	
+	function createTransWrapper() {
+        let span = document.createElement('span');
+        span.id = 'transWrapper';
+        span.innerHTML = `Type: <select id="transTypeSelect"><option value="a">a</option><option value="b">b</option></select> Dir: <select id="transDirSelect"><option value="up">up</option><option value="down">down</option></select>`;
+        document.querySelector('.controls').appendChild(span);
+        return span;
+    }
+
+    function updateOutput() {
+        if (entities.length === 0) {
+            output.value = "[]";
+            return;
+        }
+        // Stringify each entity individually and join with a comma and newline
+        const formatted = entities.map(e => "    " + JSON.stringify(e)).join(',\n');
+        output.value = `[\n${formatted}\n]`;
+    }
+
+	function render() {
+        const w = (img.width > 0) ? canvas.width : 800;
+        const h = (img.height > 0) ? canvas.height : 600;
+        ctx.clearRect(0, 0, w, h);
+        if (img.complete && img.width > 0) ctx.drawImage(img, 0, 0, w, h);
+        else { ctx.fillStyle = "#333"; ctx.fillRect(0, 0, w, h); }
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        for(let i = 0; i <= (w / cellSize); i++) { ctx.beginPath(); ctx.moveTo(i * cellSize, 0); ctx.lineTo(i * cellSize, h); ctx.stroke(); }
+        for(let i = 0; i <= (h / cellSize); i++) { ctx.beginPath(); ctx.moveTo(0, i * cellSize); ctx.lineTo(w, i * cellSize); ctx.stroke(); }
+
+        entities.forEach(ent => {
+            let drawX = ent.x * cellSize + 4;
+            let drawY = ent.y * cellSize + 4;
+
+            if (ent.type === 'chest') ctx.fillStyle = 'yellow';
+            else if (ent.type === 'shop') ctx.fillStyle = 'lime';
+            else if (ent.type === 'gate') ctx.fillStyle = 'cyan';
+            else if (ent.type === 'spinner') ctx.fillStyle = 'magenta';
+            else if (ent.type === 'trap') ctx.fillStyle = 'red';
+            else if (ent.type === 'message') ctx.fillStyle = '#B8A55E'; 
+            else if (ent.type === 'town_footprint') ctx.fillStyle = '#4488ff';
+            else if (ent.type === 'dungeon_entrance') ctx.fillStyle = '#800080';
+            else if (ent.type === 'darkness') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.strokeStyle = '#fff';
+                ctx.fillRect(drawX, drawY, cellSize - 8, cellSize - 8);
+                ctx.strokeRect(drawX, drawY, cellSize - 8, cellSize - 8);
+                return;
+            }           
+            else if (ent.type === 'anti_magic') {
+                ctx.fillStyle = 'rgba(75, 0, 130, 0.5)'; 
+                ctx.strokeStyle = '#fff';
+                ctx.fillRect(drawX, drawY, cellSize - 8, cellSize - 8);
+                ctx.strokeRect(drawX, drawY, cellSize - 8, cellSize - 8);
+                return;
+            }           
+            else if (ent.type === 'silence') {
+                ctx.fillStyle = 'rgba(100, 100, 100, 0.5)';
+                ctx.strokeStyle = '#fff';
+                ctx.fillRect(drawX, drawY, cellSize - 8, cellSize - 8);
+                ctx.strokeRect(drawX, drawY, cellSize - 8, cellSize - 8);
+                return;
+            }
+            else if (ent.type === 'teleporter' || ent.type === 'trap_door') {
+                ctx.fillStyle = (ent.type === 'teleporter') ? 'cyan' : 'rgba(99, 87, 37, 0.5)';
+                ctx.fillRect(ent.x * cellSize + 4, ent.y * cellSize + 4, cellSize - 8, cellSize - 8);
+                ctx.strokeStyle = '#fff';
+                ctx.beginPath();
+                ctx.moveTo(ent.x * cellSize + cellSize/2, ent.y * cellSize + cellSize/2);
+                ctx.lineTo(ent.destX * cellSize + cellSize/2, ent.destY * cellSize + cellSize/2);
+                ctx.stroke();
+                return;
+            }
+            else ctx.fillStyle = 'blue';
+
+            ctx.fillRect(drawX, drawY, cellSize - 8, cellSize - 8);
+        });
+    }
+
+    async function openEditModal(ent) {
+		editingEntity = ent;
+		const fields = document.getElementById('edit-fields');
+		const previewBox = document.getElementById('shop-preview-box');
+		fields.innerHTML = '';
+
+		if (ent.type === 'shop') {
+			previewBox.style.display = 'block';
+			if (!window.assets) {
+				try {
+					const res = await fetch('assets/assets.json');
+					window.assets = await res.json();
+				} catch(e) { window.assets = { exteriors: [], interiors: [] }; }
+			}
+
+			Object.keys(shopDefaults).forEach(key => {
+				if (['shadowX', 'shadowY', 'highlightX', 'highlightY'].includes(key)) return;
+				let val = ent[key] !== undefined ? ent[key] : shopDefaults[key];
+				if (key === 'signText' && ent.signText === undefined && ent.name !== undefined) {
+					val = ent.name;
+				}
+
+				if (key === 'exterior' || key === 'interior') {
+					const list = key === 'exterior' ? window.assets.exteriors : window.assets.interiors;
+					fields.innerHTML += `<div><label style="display:block; font-weight:bold;">${key}</label><select id="edit_${key}" onchange="renderShopPreview()" style="width:100%;">${list.map(i => `<option value="${i}" ${i === val ? 'selected' : ''}>${i}</option>`).join('')}</select></div>`;
+				} 
+				else if (key === 'textColor') {
+					fields.innerHTML += `<div><label style="display:block; font-weight:bold;">${key}</label><input id="edit_${key}" type="color" value="${val}" oninput="renderShopPreview()" style="width:100%; height:30px;"></div>`;
+				}
+				else if (['shadowColor', 'highlightColor'].includes(key)) {
+					const isEnabled = val !== 'none';
+					const displayVal = isEnabled ? val : '#000000';
+					const suffix = key.replace('Color', ''); 
+
+					let offX = ent[suffix + 'X'] !== undefined ? ent[suffix + 'X'] : shopDefaults[suffix + 'X'];
+					let offY = ent[suffix + 'Y'] !== undefined ? ent[suffix + 'Y'] : shopDefaults[suffix + 'Y'];
+
+					fields.innerHTML += `
+						<div style="margin-top:10px; border-top:1px solid #5a2e0e; padding-top:5px;">
+							<label style="font-weight:bold;">${key}</label>
+							<div style="display:flex; align-items:center; gap:5px;">
+								<input type="checkbox" id="enable_${key}" ${isEnabled ? 'checked' : ''} onchange="toggleColorInput('${key}')"> Enable
+								<input id="edit_${key}" type="color" value="${displayVal}" ${isEnabled ? '' : 'disabled'} oninput="renderShopPreview()">
+								X: <input id="edit_${suffix}X" type="number" value="${offX}" oninput="renderShopPreview()" style="width:50px;">
+								Y: <input id="edit_${suffix}Y" type="number" value="${offY}" oninput="renderShopPreview()" style="width:50px;">
+							</div>
+						</div>`;
+				}
+				else if (key === 'fontFamily') {
+					const fonts = [
+									"'Georgia', serif", 
+									"'Almendra', serif", 
+									"'Eagle Lake', serif",
+									"'Parisienne', cursive"
+								   ];
+					fields.innerHTML += `<div><label style="display:block; font-weight:bold;">${key}</label><select id="edit_${key}" onchange="renderShopPreview()" style="width:100%;">${fonts.map(f => `<option value="${f}" ${f === val ? 'selected' : ''}>${f}</option>`).join('')}</select></div>`;
+				}
+				else {
+					const type = (typeof val === 'number') ? 'number' : 'text';
+					const step = (type === 'number') ? '0.001' : '';
+					fields.innerHTML += `<div><label style="display:block; font-weight:bold;">${key}</label><input id="edit_${key}" type="${type}" step="${step}" value="${val}" oninput="renderShopPreview()" style="width:100%;"></div>`;
+				}
+			});
+		} else if (ent.type === 'message') {
+            previewBox.style.display = 'none';
+            fields.innerHTML = `
+                <div><label>Type (note, page, etc)</label><input id="edit_msgType" value="${ent.msgType}"></div>
+                <div><label>Description</label><input id="edit_desc" value="${ent.desc}"></div>
+                <div><label>Content</label><textarea id="edit_content" style="width:100%; height:100px;">${ent.content}</textarea></div>
+                <div><label>Part (of sequence)</label><input id="edit_part" type="number" value="${ent.part}"></div>
+                <div><label>Of (total count)</label><input id="edit_of" type="number" value="${ent.of}"></div>
+            `;
+        } else if (ent.type === 'town_footprint') {
+            previewBox.style.display = 'none';
+            fields.innerHTML = `
+                <div><label>Name</label><input id="edit_name" value="${ent.name}"></div>
+                <div><label>Town Level</label><input id="edit_townLevel" type="number" value="${ent.townLevel}"></div>
+                <div>
+                    <label>Wall Style</label>
+                    <select id="edit_wallStyle" style="width:100%;">
+                        <option value="a" ${ent.wallStyle === 'a' ? 'selected' : ''}>a</option>
+                        <option value="b" ${ent.wallStyle === 'b' ? 'selected' : ''}>b</option>
+                        <option value="c" ${ent.wallStyle === 'c' ? 'selected' : ''}>c</option>
+						<option value="d" ${ent.wallStyle === 'c' ? 'selected' : ''}>d</option>
+						<option value="e" ${ent.wallStyle === 'c' ? 'selected' : ''}>e</option>
+						<option value="f" ${ent.wallStyle === 'c' ? 'selected' : ''}>f</option>
+						<option value="g" ${ent.wallStyle === 'c' ? 'selected' : ''}>g</option>
+						<option value="h" ${ent.wallStyle === 'c' ? 'selected' : ''}>h</option>
+                    </select>
+                </div>
+            `;
+		} else if (ent.type === 'dungeon_gate') {
+            previewBox.style.display = 'none';
+            fields.innerHTML = `
+                <div><label>Name</label><input id="edit_name" value="${ent.name}"></div>
+                <div><label>Desc</label><input id="edit_desc" value="${ent.desc}"></div>
+                <div><label>Target Map</label><input id="edit_targetMap" value="${ent.targetMap}"></div>
+                <div><label>Spawn X</label><input id="edit_spawnX" type="number" value="${ent.spawnX}"></div>
+                <div><label>Spawn Y</label><input id="edit_spawnY" type="number" value="${ent.spawnY}"></div>
+                <div><label>Gate Type</label>
+                    <select id="edit_gateType" style="width:100%;">
+                        ${['a','b','c','d','e','f','g','h','i'].map(t => `<option value="${t}" ${ent.gateType === t ? 'selected' : ''}>${t}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+		} else if (ent.type === 'dungeon_entrance') {
+			previewBox.style.display = 'none';
+			fields.innerHTML = `
+				<div><label>Name</label><input id="edit_name" value="${ent.name}"></div>
+				<div>
+					<label>Wall Style</label>
+					<select id="edit_wallStyle" style="width:100%;">
+						${['a','b','c','d','e','f','g','h','i'].map(t => `<option value="${t}" ${ent.wallStyle === t ? 'selected' : ''}>${t}</option>`).join('')}
+					</select>
+				</div>
+			`;			
+        } else if (ent.type === 'transition') {
+			previewBox.style.display = 'none';
+			fields.innerHTML = `
+				<div><label>Direction</label><select id="edit_direction" style="width:100%;"><option value="up" ${ent.direction==='up'?'selected':''}>up</option><option value="down" ${ent.direction==='down'?'selected':''}>down</option></select></div>
+				<div><label>Type</label><select id="edit_transitionType" style="width:100%;"><option value="a" ${ent.transitionType==='a'?'selected':''}>a</option><option value="b" ${ent.transitionType==='b'?'selected':''}>b</option></select></div>
+				<div><label>Desc</label><input id="edit_desc" value="${ent.desc}"></div>
+				<div><label>Target Map</label><input id="edit_targetMap" value="${ent.targetMap}"></div>
+				<div><label>Spawn X</label><input id="edit_spawnX" type="number" value="${ent.spawnX}"></div>
+				<div><label>Spawn Y</label><input id="edit_spawnY" type="number" value="${ent.spawnY}"></div>
+			`;		
+		} else {
+			previewBox.style.display = 'none';
+			for (let key in ent) {
+				if (key === 'type') continue; 
+				fields.innerHTML += `<div><label style="display:block; font-weight:bold;">${key}</label><input id="edit_${key}" value="${ent[key]}" style="width:100%;"></div>`;
+			}
+		}
+		document.getElementById('edit-modal').style.display = 'flex';
+		if (ent.type === 'shop') renderShopPreview();
+	}
+
+
+
+    async function renderShopPreview() {
+		const canvas = document.getElementById('shopPreviewCanvas');
+		const ctx = canvas.getContext('2d');
+		const ext = document.getElementById('edit_exterior').value;
+
+		// 1. Capture all current values synchronously
+		const font = document.getElementById('edit_fontFamily').value;
+		const fontName = font.split(',')[0].replace(/['"]/g, '');
+		const txt = document.getElementById('edit_signText').value; // Contains <BR>
+		const textX = parseFloat(document.getElementById('edit_textX').value);
+		const textY = parseFloat(document.getElementById('edit_textY').value);
+		const size = parseFloat(document.getElementById('edit_fontSizeMult').value) * canvas.width;
+		const col = document.getElementById('edit_textColor').value;
+		const shadowCol = document.getElementById('edit_shadowColor').value;
+		const shadowEnabled = document.getElementById('enable_shadowColor').checked;
+		const shadowX = parseFloat(document.getElementById('edit_shadowX').value);
+		const shadowY = parseFloat(document.getElementById('edit_shadowY').value);
+		const highlightCol = document.getElementById('edit_highlightColor').value;
+		const highlightEnabled = document.getElementById('enable_highlightColor').checked;
+		const highlightX = parseFloat(document.getElementById('edit_highlightX').value);
+		const highlightY = parseFloat(document.getElementById('edit_highlightY').value);
+
+		try { await document.fonts.load(`bold 20px ${fontName}`); } catch(e) {}
+
+		const img = new Image();
+		img.onload = () => {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+			ctx.font = `bold ${size}px ${font}`;
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
+
+			// 2. Prepare the lines
+			const lines = txt.split(/<br\s*\/?>/i);
+			const lineHeight = size * 1.15; // 1.15 is the standard multiplier used in your game
+			const totalHeight = (lines.length - 1) * lineHeight;
+			const startY = (canvas.height * textY) - (totalHeight / 2);
+
+			// 3. Draw the lines
+			lines.forEach((line, index) => {
+				let currentY = startY + (index * lineHeight);
+
+				// Highlight Layer
+				if (highlightEnabled && highlightCol !== 'none') {
+					ctx.fillStyle = highlightCol;
+					ctx.fillText(line.trim(), (canvas.width * textX) + highlightX, currentY + highlightY);
+				}
+
+				// Shadow Layer
+				if (shadowEnabled && shadowCol !== 'none') {
+					ctx.fillStyle = shadowCol;
+					ctx.fillText(line.trim(), (canvas.width * textX) + shadowX, currentY + shadowY);
+				}
+
+				// Main Text Layer
+				ctx.fillStyle = col;
+				ctx.fillText(line.trim(), (canvas.width * textX), currentY);
+			});
+		};
+		img.src = `assets/${ext}?v=${Date.now()}`;
+	}
+
+    function saveEdit() {
+		if (editingEntity.type === 'shop') {
+			Object.keys(shopDefaults).forEach(key => {
+				if (['shadowColor', 'highlightColor'].includes(key)) {
+					// Save Color
+					const enabled = document.getElementById('enable_' + key).checked;
+					editingEntity[key] = enabled ? document.getElementById('edit_' + key).value : 'none';
+
+					// Save Offsets
+					const suffix = key.replace('Color', '');
+					editingEntity[suffix + 'X'] = parseFloat(document.getElementById('edit_' + suffix + 'X').value);
+					editingEntity[suffix + 'Y'] = parseFloat(document.getElementById('edit_' + suffix + 'Y').value);
+				} else {
+					const el = document.getElementById('edit_' + key);
+					if (el) {
+						let val = el.value;
+						if (!isNaN(val) && val.trim() !== "" && typeof shopDefaults[key] === 'number') val = parseFloat(val);
+						editingEntity[key] = val;
+					}
+				}
+			});
+		} else {
+			for (let key in editingEntity) {
+				if (key === 'type') continue;
+				const input = document.getElementById('edit_' + key);
+				if (input) {
+					let val = input.value;
+					if (!isNaN(val) && val.trim() !== "") val = val.includes('.') ? parseFloat(val) : parseInt(val, 10);
+					editingEntity[key] = val;
+				}
+			}
+		}
+		document.getElementById('edit-modal').style.display = 'none';
+		updateOutput();
+		render();
+	}
+
+
+    function deleteEdit() {
+        entities = entities.filter(e => e !== editingEntity);
+        document.getElementById('edit-modal').style.display = 'none';
+        updateOutput();
+        render();
+    }
+
+    function initiateMove() {
+        moveMode = true;
+        document.getElementById('edit-modal').style.display = 'none';
+        canvas.classList.add('move-mode');
+        alert("Click on the new location for this entity.");
+    }
+
+    function clearEntities() { entities = []; updateOutput(); render(); }
+
+	async function refreshMapList() {
+		try {
+			const response = await fetch('assets/maps/maps_list.json?v=' + Date.now());
+			if (!response.ok) throw new Error("File not found");
+			const list = await response.json();
+
+			// 🌟 Sort the list alphabetically before populating the dropdown
+			list.sort();
+
+			mapSelect.innerHTML = '<option value="">Select a map...</option>';
+			list.forEach(m => {
+				let opt = document.createElement('option');
+				opt.value = m; opt.innerText = m;
+				mapSelect.appendChild(opt);
+			});
+		} catch (err) { console.error("Could not load maps_list.json.", err); }
+	}
+
+		function loadMap() {
+			const fileName = mapSelect.value;
+			if (!fileName) return;
+			img.onload = () => {
+				canvas.width = img.width * 20; 
+				canvas.height = img.height * 20;
+				cellSize = canvas.width / img.width;
+				ctx.imageSmoothingEnabled = false;
+				entities = []; 
+				render();
+			};
+			img.src = `assets/maps/${fileName}?v=${Date.now()}`;
+		}
+
+    document.addEventListener('DOMContentLoaded', () => {
+        canvas = document.getElementById('mapCanvas');
+        ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+
+        mapSelect = document.getElementById('mapSelect');
+        output = document.getElementById('output');
+
+        updateTypeOptions(); // Initialize UI
+
+        output.addEventListener('input', (e) => {
+            try {
+                const parsed = (new Function("return " + e.target.value))();
+                if (Array.isArray(parsed)) {
+                    entities = parsed;
+                    render();
+                }
+            } catch (err) {
+                console.error("Parse error (Paste must be valid JS object or Array):", err);
+            }
+        });
+
+        canvas.addEventListener('mousedown', e => {
+        if (!img.src || img.width === 0) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) / cellSize);
+        const y = Math.floor((e.clientY - rect.top) / cellSize);
+
+        if (moveMode) {
+            if (editingEntity) {
+                editingEntity.x = x; editingEntity.y = y;
+                if (editingEntity.wallX !== undefined) { editingEntity.wallX = x; editingEntity.wallY = y; }
+                moveMode = false;
+                canvas.classList.remove('move-mode');
+                render(); updateOutput(); openEditModal(editingEntity);
+            }
+            return;
+        }
+
+
+        const existing = entities.find(ent => ent.x === x && ent.y === y);
+				if (existing) { openEditModal(existing); } 
+				else {
+					const type = document.getElementById('typeSelect').value;
+					let entity = { x, y, type: type };
+
+					if (type === 'message') {
+						entity = { x, y, type: 'message', msgType: 'note', desc: 'A mysterious note', content: '...', part: 1, of: 1, isDetected: false };
+					}
+                    else if (type === 'chest') {
+                        entity = { x, y, type: 'chest', state: 'closed' };
+                    } 
+                    else if (type === 'town_footprint') {
+                        entity = { x, y, type: 'town_footprint', name: "Town", townLevel: 1, wallStyle: 'a' };
+                    }
+                    else if (type === 'dungeon_entrance') {
+						entity = { x, y, type: 'dungeon_entrance', wallStyle: 'a', name: "Dungeon" };
+					}
+                    else if (type === 'transition') {
+						const tType = document.getElementById('transTypeSelect').value;
+						const tDir = document.getElementById('transDirSelect').value;
+						entity = { x, y, type: 'transition', desc: "a passage", targetMap: "map_id", spawnX: 0, spawnY: 0, spawnDir: 0, direction: tDir, transitionType: tType };
+					}
+                    else if (type === 'dungeon_gate') {
+                        entity = { x, y, wallX: x, wallY: y, type: 'dungeon_gate', desc: "the grand entrance", targetMap: "map_id", spawnX: 1, spawnY: 1, spawnDir: 0, gateType: 'a', name: "New Dungeon" };
+                    }
+                    else if (type === 'shop') {
+                        entity = { x, y, wallX: x, wallY: y, type: 'shop', shopType: document.getElementById('shopTypeSelect').value, name: "Shop", signText: "Shop", interior: "shop_interior_generic.webp", exterior: "shop_front_generic.webp" };
+                    }
+                    else if (type === 'gate') {
+                        entity = { x, y, type: 'gate', name: "Town Name", targetMap: "town_id", spawnX: 0, spawnY: 0 };
+                    }
+                    else if (type === 'spinner') {
+                        entity = { x, y, type: 'spinner', isDetected: false };
+                    }
+                    else if (type === 'trap') {
+                        const level = parseInt(document.getElementById('trapLevelSelect').value);
+                        entity = { x, y, type: 'trap', trapLevel: level, isDetected: false };
+                    }
+                    else if (type === 'trap_door') {
+                        entity = { x, y, type: 'trap_door', targetMap: "map_id", spawnX: x, spawnY: y, spawnDir: 0, isDetected: false };             
+                    }
+                    else if (type === 'darkness') {
+                        entity = { x, y, type: 'darkness', isDetected: false };
+                    }
+                    else if (type === 'anti_magic') {
+                        entity = { x, y, type: 'anti_magic', isDetected: false }; 
+                    }
+                    else if (type === 'silence') {
+                        entity = { x, y, type: 'silence', isDetected: false }; 
+                    }
+                    else if (type === 'teleporter') {
+                        if (!pendingTeleporter) {
+                            pendingTeleporter = { x, y };
+                            alert("Step 1: Start point selected. Now click the destination.");
+                            return;
+                        } else {
+                            entity = { x: pendingTeleporter.x, y: pendingTeleporter.y, type: 'teleporter', destX: x, destY: y, isDetected: false };
+                            pendingTeleporter = null;
+                        }
+                    }
+                    else if (type === 'transition_up') {
+                        entity = { x, y, type: 'transition', desc: "in front of a wooden ladder leading up", targetMap: "map_id", spawnX: 0, spawnY: 0, spawnDir: 0, direction: 'up' };
+                    }
+                    else if (type === 'transition_down') {
+                        entity = { x, y, type: 'transition', desc: "on a dark iron grate leading deeper", targetMap: "map_id", spawnX: 0, spawnY: 0, spawnDir: 0, direction: 'down' };
+                    }
+
+                    entities.push(entity);
+                    updateOutput();
+                    render();
+                }
+            });
+
+        refreshMapList();
+    });
+    </script>
+</body>
+</html>

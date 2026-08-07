@@ -54,6 +54,30 @@ window.dungeonTextureAtlasImages = {};
 window.cityTextureAtlas = {};
 window.cityTextureAtlasImages = {};
 
+window.createCanvasFromSprite = function(sprite) {
+    if (!sprite || !sprite.image.complete || sprite.frame.w === 0) return null;
+
+    const c = document.createElement('canvas');
+    const ctx = c.getContext('2d');
+
+    if (sprite.trimmed && sprite.sourceSize) {
+        c.width = sprite.sourceSize.w;
+        c.height = sprite.sourceSize.h;
+        ctx.drawImage(sprite.image, 
+            sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, 
+            sprite.spriteSourceSize.x, sprite.spriteSourceSize.y, sprite.frame.w, sprite.frame.h
+        );
+    } else {
+        c.width = sprite.frame.w;
+        c.height = sprite.frame.h;
+        ctx.drawImage(sprite.image, 
+            sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, 
+            0, 0, sprite.frame.w, sprite.frame.h
+        );
+    }
+    return c;
+};
+
 window.getSpriteDataUrl = function(filename) {
     // 1. Check Item Atlas
     let sprite = window.getItemAtlasSprite(filename);
@@ -70,7 +94,10 @@ window.getSpriteDataUrl = function(filename) {
     // 5. Check City Atlas (if not found)
     if (!sprite) sprite = window.getCityAtlasSprite(filename);
 
-    // 6. If sprite isn't in any atlas, return the standard URL safely formatted
+    // 6. Check Door Atlas (if not found)
+    if (!sprite) sprite = window.getDoorAtlasSprite(filename);
+
+    // 7. If sprite isn't in any atlas, return the standard URL safely formatted
     if (!sprite || !sprite.image) {
         let path = filename;
         if (!path.startsWith('assets/') && !path.startsWith('data:')) {
@@ -82,19 +109,11 @@ window.getSpriteDataUrl = function(filename) {
         return path;
     }
 
-    // 7. Create the DataURL from the atlas
-    const c = document.createElement('canvas');
-    c.width = sprite.frame.w;
-    c.height = sprite.frame.h;
-    const ctx = c.getContext('2d');
-    ctx.drawImage(sprite.image, 
-        sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, 
-        0, 0, sprite.frame.w, sprite.frame.h
-    );
-
+    // 8. Create the DataURL from the atlas
+    const c = window.createCanvasFromSprite(sprite);
+    if (!c) return "";
     return c.toDataURL();
 };
-
 
 window.loadBestiaryAtlases = async function() {
     const totalPacks = 8;
@@ -119,7 +138,10 @@ window.loadBestiaryAtlases = async function() {
                 data.frames.forEach(f => {
                     window.textureAtlas[f.filename] = { 
                         image: img, 
-                        frame: f.frame 
+                        frame: f.frame,
+                        trimmed: f.trimmed,
+                        spriteSourceSize: f.spriteSourceSize,
+                        sourceSize: f.sourceSize
                     };
                 });
             } catch (e) {
@@ -130,6 +152,7 @@ window.loadBestiaryAtlases = async function() {
     await Promise.all(promises);
     console.log("Bestiary Atlas Loaded.");
 };
+
 
 window.loadSpellAtlases = async function() {
     const packs = ['spells.json', 'spells-2.json'];
@@ -153,7 +176,10 @@ window.loadSpellAtlases = async function() {
                 data.frames.forEach(f => {
                     window.spellTextureAtlas[f.filename] = { 
                         image: img, 
-                        frame: f.frame 
+                        frame: f.frame,
+                        trimmed: f.trimmed,
+                        spriteSourceSize: f.spriteSourceSize,
+                        sourceSize: f.sourceSize
                     };
                 });
             } catch(e) { console.warn("Failed to load spell atlas pack:", pack); }
@@ -162,6 +188,7 @@ window.loadSpellAtlases = async function() {
     await Promise.all(promises);
     console.log("Spell Atlas Loaded.");
 };
+
 
 window.getSpellAtlasSprite = function(filename) {
     if (window.spellTextureAtlas[filename]) return window.spellTextureAtlas[filename];
@@ -206,7 +233,10 @@ window.loadItemAtlases = async function() {
                 data.frames.forEach(f => {
                     window.itemTextureAtlas[f.filename] = { 
                         image: img, 
-                        frame: f.frame 
+                        frame: f.frame,
+                        trimmed: f.trimmed,
+                        spriteSourceSize: f.spriteSourceSize,
+                        sourceSize: f.sourceSize
                     };
                 });
             } catch(e) { console.warn("Failed to load item atlas pack:", pack); }
@@ -215,6 +245,7 @@ window.loadItemAtlases = async function() {
     await Promise.all(promises);
     console.log("Item Atlas Loaded.");
 };
+
 
 window.getItemAtlasSprite = function(filename) {
     if (window.itemTextureAtlas[filename]) return window.itemTextureAtlas[filename];
@@ -250,7 +281,10 @@ window.loadDungeonAtlases = async function() {
                 data.frames.forEach(f => {
                     window.dungeonTextureAtlas[f.filename] = { 
                         image: img, 
-                        frame: f.frame 
+                        frame: f.frame,
+                        trimmed: f.trimmed,
+                        spriteSourceSize: f.spriteSourceSize,
+                        sourceSize: f.sourceSize
                     };
                 });
             } catch(e) { console.warn(`Failed to load dungeon atlas pack: ${packName}`, e); }
@@ -259,6 +293,7 @@ window.loadDungeonAtlases = async function() {
     await Promise.all(promises);
     console.log("Dungeon Atlas System Loaded.");
 };
+
 
 window.getDungeonAtlasSprite = function(filename) {
     if (window.dungeonTextureAtlas[filename]) return window.dungeonTextureAtlas[filename];
@@ -293,7 +328,10 @@ window.loadCityAtlases = async function() {
                 data.frames.forEach(f => {
                     window.cityTextureAtlas[f.filename] = { 
                         image: img, 
-                        frame: f.frame 
+                        frame: f.frame,
+                        trimmed: f.trimmed,
+                        spriteSourceSize: f.spriteSourceSize,
+                        sourceSize: f.sourceSize
                     };
                 });
             } catch(e) { console.warn(`Failed to load city atlas pack: ${packName}`, e); }
@@ -302,6 +340,7 @@ window.loadCityAtlases = async function() {
     await Promise.all(promises);
     console.log("City Atlas System Loaded.");
 };
+
 
 window.getCityAtlasSprite = function(filename) {
     if (window.cityTextureAtlas[filename]) return window.cityTextureAtlas[filename];
@@ -313,7 +352,57 @@ window.getCityAtlasSprite = function(filename) {
     return null;
 };
 
-// 🌟 NEW: PRELOAD ALL ATLASES IN BACKGROUND AT BOOT
+window.doorTextureAtlas = {};
+window.doorTextureAtlasImages = {};
+
+window.loadDoorAtlases = async function() {
+    const totalPacks = 10;
+    let promises = [];
+    for (let i = 0; i < totalPacks; i++) {
+        promises.push((async () => {
+            let packName = `doors-${i}`;
+            try {
+                const res = await fetch(`assets/${packName}.json?v=${GAME_VERSION}`);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                let img = new Image();
+                img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
+                window.doorTextureAtlasImages[data.meta.image] = img;
+
+                await new Promise(resolve => {
+                    if (img.complete) resolve();
+                    else { img.onload = resolve; img.onerror = resolve; }
+                });
+
+                data.frames.forEach(f => {
+                    window.doorTextureAtlas[f.filename] = { 
+                        image: img, 
+                        frame: f.frame,
+                        trimmed: f.trimmed,
+                        spriteSourceSize: f.spriteSourceSize,
+                        sourceSize: f.sourceSize
+                    };
+                });
+            } catch(e) { console.warn(`Failed to load door atlas pack: ${packName}`, e); }
+        })());
+    }
+    await Promise.all(promises);
+    console.log("Door Atlas System Loaded.");
+};
+
+
+window.getDoorAtlasSprite = function(filename) {
+    if (window.doorTextureAtlas[filename]) return window.doorTextureAtlas[filename];
+    let baseName = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
+    for (let key in window.doorTextureAtlas) {
+        let keyBase = key.includes('.') ? key.substring(0, key.lastIndexOf('.')) : key;
+        if (keyBase === baseName) return window.doorTextureAtlas[key];
+    }
+    return null;
+};
+
+
 window.atlasesLoaded = false;
 window.preloadAllAtlasesPromise = (async function() {
     let btnStart = document.getElementById('btn-start-game');
@@ -326,7 +415,8 @@ window.preloadAllAtlasesPromise = (async function() {
         window.loadBestiaryAtlases(),
         window.loadSpellAtlases(),
         window.loadDungeonAtlases(),
-        window.loadCityAtlases()
+        window.loadCityAtlases(),
+        window.loadDoorAtlases()
     ]);
 
     window.atlasesLoaded = true;
@@ -4610,7 +4700,12 @@ function interact() {
     if (fDoor && fDoor.state === 'closed') { 
         fDoor.state = 'open'; 
         window.playSfx('door_opening.ogg'); // 🌟 PLAY DOOR SFX
-        logMsg("You turn the handle and push open the heavy wooden door."); 
+
+        // 🌟 NEW: Dynamic door message checking the map config (or the specific door entity)
+        let customDoorText = fDoor.doorText || (worldMaps[currentMapId] && worldMaps[currentMapId].doorText);
+        let msg = customDoorText ? customDoorText : "You turn the handle and push open the heavy wooden door.";
+        logMsg(msg); 
+
         if(typeof update === 'function') update(); 
         return; 
     }
@@ -4627,6 +4722,7 @@ function interact() {
         return;
     }
 }
+
 
 window.enterHouse = function(fX, fY) {
     // 🌟 SAVE POSITION: Store where we were standing (on the street)

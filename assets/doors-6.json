@@ -1,0 +1,237 @@
+{"frames": [
+
+{
+	"filename": "bronze_door_closed6.webp",
+	"frame": {"x":592,"y":507,"w":292,"h":503},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":113,"y":9,"w":292,"h":503},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "bronze_door_closed8.webp",
+	"frame": {"x":1,"y":1,"w":295,"h":505},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":7,"w":295,"h":505},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "bronze_door_open5.webp",
+	"frame": {"x":298,"y":1,"w":292,"h":504},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":113,"y":8,"w":292,"h":504},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "bronze_door_open6.webp",
+	"frame": {"x":593,"y":1012,"w":292,"h":503},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":113,"y":9,"w":292,"h":503},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "bronze_door_open8.webp",
+	"frame": {"x":1,"y":508,"w":295,"h":505},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":7,"w":295,"h":505},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "fane_door_closed0.webp",
+	"frame": {"x":1718,"y":461,"w":236,"h":453},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":138,"y":59,"w":236,"h":453},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "fane_door_closed1.webp",
+	"frame": {"x":1719,"y":1,"w":236,"h":453},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":138,"y":59,"w":236,"h":453},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "fane_door_closed2.webp",
+	"frame": {"x":1666,"y":1419,"w":236,"h":453},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":138,"y":59,"w":236,"h":453},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "fane_door_closed3.webp",
+	"frame": {"x":1719,"y":916,"w":236,"h":453},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":138,"y":59,"w":236,"h":453},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_closed3.webp",
+	"frame": {"x":1,"y":1522,"w":293,"h":495},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":17,"w":293,"h":495},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_closed4.webp",
+	"frame": {"x":833,"y":1517,"w":293,"h":500},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":12,"w":293,"h":500},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_closed5.webp",
+	"frame": {"x":886,"y":503,"w":293,"h":499},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":111,"y":13,"w":293,"h":499},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_closed6.webp",
+	"frame": {"x":1181,"y":499,"w":293,"h":496},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":16,"w":293,"h":496},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_closed9.webp",
+	"frame": {"x":1128,"y":1505,"w":294,"h":496},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":16,"w":294,"h":496},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_open3.webp",
+	"frame": {"x":296,"y":1522,"w":293,"h":495},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":17,"w":293,"h":495},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_open4.webp",
+	"frame": {"x":886,"y":1,"w":293,"h":500},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":12,"w":293,"h":500},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_open5.webp",
+	"frame": {"x":887,"y":1004,"w":293,"h":499},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":111,"y":13,"w":293,"h":499},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_open6.webp",
+	"frame": {"x":1182,"y":997,"w":293,"h":496},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":16,"w":293,"h":496},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_open9.webp",
+	"frame": {"x":1181,"y":1,"w":294,"h":496},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":16,"w":294,"h":496},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_open5.webp",
+	"frame": {"x":591,"y":1522,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_open6.webp",
+	"frame": {"x":1476,"y":499,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_open7.webp",
+	"frame": {"x":1477,"y":1,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_open8.webp",
+	"frame": {"x":1424,"y":1495,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_open9.webp",
+	"frame": {"x":1477,"y":959,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_door_closed0.webp",
+	"frame": {"x":1,"y":1015,"w":294,"h":505},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":112,"y":7,"w":294,"h":505},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_door_closed2.webp",
+	"frame": {"x":298,"y":507,"w":292,"h":504},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":112,"y":8,"w":292,"h":504},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_door_open0.webp",
+	"frame": {"x":297,"y":1015,"w":294,"h":505},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":112,"y":7,"w":294,"h":505},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_door_open2.webp",
+	"frame": {"x":592,"y":1,"w":292,"h":504},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":112,"y":8,"w":292,"h":504},
+	"sourceSize": {"w":512,"h":512}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "doors-6.webp",
+	"format": "RGBA8888",
+	"size": {"w":1956,"h":2018},
+	"scale": "1",
+	"related_multi_packs": [ "doors-0.json", "doors-1.json", "doors-2.json", "doors-3.json", "doors-4.json", "doors-5.json", "doors-7.json", "doors-8.json", "doors-9.json" ],
+	"smartupdate": "$TexturePacker:SmartUpdate:689475020ec26dc6ce5a12489c7b8215:6739ecea6618514faa9b1352bed7039b:8607d55d39d9acd4ad5e6110b8e446ed$"
+}
+}

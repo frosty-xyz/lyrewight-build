@@ -25,6 +25,9 @@ const bctx = bmCanvas.getContext('2d');
 const treeBuffer = document.createElement('canvas');
 const treeCtx = treeBuffer.getContext('2d');
 
+const compBuffer = document.createElement('canvas');
+const compCtx = compBuffer.getContext('2d', { willReadFrequently: true });
+
 const CEILING_DARKNESS = 0.3; 
 const SPRITE_SCALE = 0.6; 
 const SPRITE_Y_OFFSET = 0.25; 
@@ -119,9 +122,6 @@ window.ensureAssetsAreDrawn = function() {
     requestAnimationFrame(poll);
 };
 
-const DOOR_TYPES = {
-    'wooden': { cropT: 0.00, cropB: 0.08, cropS: 0.00, holeL: 0.32, holeR: 0.68, holeT: 0.13 }
-};
 ctx.imageSmoothingEnabled = true;
 mctx.imageSmoothingEnabled = false;
 
@@ -187,16 +187,18 @@ window.preloadDungeonAssets = function(wallName, onReady) {
             let sprite = window.getDungeonAtlasSprite(filename);
 
             if (sprite) {
-                let c = document.createElement('canvas');
-                c.width = sprite.frame.w; 
-                c.height = sprite.frame.h;
-                c.getContext('2d').drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, 0, 0, sprite.frame.w, sprite.frame.h);
-                dungeonTextureCache[slug][type].push(c);
+                let c = window.createCanvasFromSprite(sprite);
+                if (c) {
+                    dungeonTextureCache[slug][type].push(c);
+                } else {
+                    let fallback = document.createElement('canvas');
+                    fallback.width = 64; fallback.height = 64;
+                    dungeonTextureCache[slug][type].push(fallback);
+                }
             } else {
-                // Fallback: Create blank canvas to prevent rendering errors
-                let c = document.createElement('canvas');
-                c.width = 64; c.height = 64;
-                dungeonTextureCache[slug][type].push(c);
+                let fallback = document.createElement('canvas');
+                fallback.width = 64; fallback.height = 64;
+                dungeonTextureCache[slug][type].push(fallback);
             }
             dLoadedCount++;
             window.onAssetLoaded();
@@ -206,10 +208,11 @@ window.preloadDungeonAssets = function(wallName, onReady) {
     if (onReady) onReady();
 };
 
+
 const townFloorTextures = [];
 const transCanvases = {};
 const chestCanvases = []; 
-const doorCanvases = { 'wooden':[] }; 
+const doorCanvases = {}; 
 const enemyCanvases = {}; 
 const townWallTextures = {}; 
 townHouseTypes.forEach(t => townWallTextures[t] = []);
@@ -219,109 +222,103 @@ const dungeonWallTextures = { 'a': [], 'b': [], 'c': [], 'd': [], 'e': [], 'f': 
 const globalDungeonGates = {};
 cityGateTypes.forEach(t => cityGateTextures[t] = []);
 
-// 🌟 NEW: City Atlas Fetchers for Rendering
 window.getTownFloorTexture = function(idx) {
     if (!townFloorTextures[idx] || townFloorTextures[idx].width === 64) {
         let filename = `town-floor${idx}`;
         let sprite = window.getCityAtlasSprite(filename);
-        if (sprite && sprite.image.complete && sprite.image.width > 0) {
-            let c = document.createElement('canvas');
-            c.width = sprite.frame.w; c.height = sprite.frame.h;
-            c.getContext('2d').drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, 0, 0, sprite.frame.w, sprite.frame.h);
+        let c = window.createCanvasFromSprite(sprite);
+        if (c) {
             townFloorTextures[idx] = c;
         } else {
             if (!townFloorTextures[idx]) {
-                let c = document.createElement('canvas');
-                c.width = 64; c.height = 64;
-                townFloorTextures[idx] = c;
+                let fallback = document.createElement('canvas');
+                fallback.width = 64; fallback.height = 64;
+                townFloorTextures[idx] = fallback;
             }
         }
     }
     return townFloorTextures[idx];
 };
 
+
 window.getTownWallTexture = function(type, idx) {
     if (!townWallTextures[type]) townWallTextures[type] = [];
     if (!townWallTextures[type][idx] || townWallTextures[type][idx].width === 64) {
         let filename = `town-house-type-${type}${idx}`;
         let sprite = window.getCityAtlasSprite(filename);
-        if (sprite && sprite.image.complete && sprite.image.width > 0) {
-            let c = document.createElement('canvas');
-            c.width = sprite.frame.w; c.height = sprite.frame.h;
-            c.getContext('2d').drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, 0, 0, sprite.frame.w, sprite.frame.h);
+        let c = window.createCanvasFromSprite(sprite);
+        if (c) {
             townWallTextures[type][idx] = c;
         } else {
             if (!townWallTextures[type][idx]) {
-                let c = document.createElement('canvas');
-                c.width = 64; c.height = 64;
-                townWallTextures[type][idx] = c;
+                let fallback = document.createElement('canvas');
+                fallback.width = 64; fallback.height = 64;
+                townWallTextures[type][idx] = fallback;
             }
         }
     }
     return townWallTextures[type][idx];
 };
 
+
 window.getCityGateTexture = function(type, idx) {
     if (!cityGateTextures[type]) cityGateTextures[type] = [];
     if (!cityGateTextures[type][idx] || cityGateTextures[type][idx].width === 64) {
         let filename = `city-gate-type-${type}${idx}`;
         let sprite = window.getCityAtlasSprite(filename);
-        if (sprite && sprite.image.complete && sprite.image.width > 0) {
-            let c = document.createElement('canvas');
-            c.width = sprite.frame.w; c.height = sprite.frame.h;
-            c.getContext('2d').drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, 0, 0, sprite.frame.w, sprite.frame.h);
+        let c = window.createCanvasFromSprite(sprite);
+        if (c) {
             cityGateTextures[type][idx] = c;
         } else {
             if (!cityGateTextures[type][idx]) {
-                let c = document.createElement('canvas');
-                c.width = 64; c.height = 64;
-                cityGateTextures[type][idx] = c;
+                let fallback = document.createElement('canvas');
+                fallback.width = 64; fallback.height = 64;
+                cityGateTextures[type][idx] = fallback;
             }
         }
     }
     return cityGateTextures[type][idx];
 };
 
+
 window.getWildCityWallTexture = function(style, idx) {
     if (!wildCityWallTextures[style]) wildCityWallTextures[style] = [];
     if (!wildCityWallTextures[style][idx] || wildCityWallTextures[style][idx].width === 64) {
         let filename = `wild_city_wall_type_${style}${idx}`;
         let sprite = window.getCityAtlasSprite(filename);
-        if (sprite && sprite.image.complete && sprite.image.width > 0) {
-            let c = document.createElement('canvas');
-            c.width = sprite.frame.w; c.height = sprite.frame.h;
-            c.getContext('2d').drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, 0, 0, sprite.frame.w, sprite.frame.h);
+        let c = window.createCanvasFromSprite(sprite);
+        if (c) {
             wildCityWallTextures[style][idx] = c;
         } else {
             if (!wildCityWallTextures[style][idx]) {
-                let c = document.createElement('canvas');
-                c.width = 64; c.height = 64;
-                wildCityWallTextures[style][idx] = c;
+                let fallback = document.createElement('canvas');
+                fallback.width = 64; fallback.height = 64;
+                wildCityWallTextures[style][idx] = fallback;
             }
         }
     }
     return wildCityWallTextures[style][idx];
 };
 
+
 window.getWildFloorTexture = function(idx) {
     if (!wildFloorTextures[idx] || wildFloorTextures[idx].width === 64) {
         let filename = `wild-floor-type-a${idx}`;
         let sprite = window.getCityAtlasSprite(filename) || window.getDungeonAtlasSprite(filename);
-        if (sprite && sprite.image.complete && sprite.image.width > 0) {
-            let c = document.createElement('canvas');
-            c.width = sprite.frame.w; c.height = sprite.frame.h;
-            c.getContext('2d').drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, 0, 0, sprite.frame.w, sprite.frame.h);
+        let c = window.createCanvasFromSprite(sprite);
+        if (c) {
             wildFloorTextures[idx] = c;
         } else {
             if (!wildFloorTextures[idx]) {
-                let c = document.createElement('canvas');
-                c.width = 64; c.height = 64;
-                wildFloorTextures[idx] = c;
+                let fallback = document.createElement('canvas');
+                fallback.width = 64; fallback.height = 64;
+                wildFloorTextures[idx] = fallback;
             }
         }
     }
     return wildFloorTextures[idx];
 };
+
 
 const uniqueShopExteriors = new Set();
 for (let key in worldMaps) {
@@ -407,23 +404,61 @@ for (let i = 0; i < 10; i++) {
         window.onAssetLoaded();
     };
     chImg.src = `assets/wooden_chest${i}.webp?v=` + GAME_VERSION;
-
-    totalAssetsToLoad++;
-    let dcImg = new Image();
-    dcImg.onload = () => {
-        let c = document.createElement('canvas');
-        c.width = dcImg.width;
-        c.height = dcImg.height;
-        c.getContext('2d').drawImage(dcImg, 0, 0);
-        doorCanvases['wooden'][i] = c;
-        window.onAssetLoaded();
-    };
-    dcImg.onerror = () => {
-        doorCanvases['wooden'][i] = document.createElement('canvas');
-        window.onAssetLoaded();
-    };
-    dcImg.src = `assets/wooden_door_closed${i}.webp?v=` + GAME_VERSION;
 }
+
+function getDoorAsset(mX, mY, typeStr) {
+    let typeKey = typeStr ? typeStr.toLowerCase() : 'wooden';
+    if (!doorCanvases[typeKey]) doorCanvases[typeKey] = [];
+    let idx = getHashIdx(mX, mY, 227, 233);
+
+    if (!doorCanvases[typeKey][idx]) {
+        doorCanvases[typeKey][idx] = { closed: null, closedMask: null, open: null, mask: null };
+
+        const processDoorSprite = (filename) => {
+            let sprite = window.getDoorAtlasSprite(filename);
+            let cTex = window.createCanvasFromSprite(sprite);
+
+            if (!cTex) {
+                return { tex: document.createElement('canvas'), mask: document.createElement('canvas') };
+            }
+
+            let cMask = document.createElement('canvas');
+            cMask.width = cTex.width;
+            cMask.height = cTex.height;
+            let ctxTex = cTex.getContext('2d');
+            let ctxMask = cMask.getContext('2d');
+
+            let imgData = ctxTex.getImageData(0, 0, cTex.width, cTex.height);
+            let maskData = ctxMask.createImageData(cTex.width, cTex.height);
+
+            for (let p = 0; p < imgData.data.length; p += 4) {
+                let r = imgData.data[p], g = imgData.data[p+1], b = imgData.data[p+2], a = imgData.data[p+3];
+                // Check for Bright Magenta with slight leniency for compression artifacts
+                if (r > 240 && g < 15 && b > 240 && a > 0) {
+                    imgData.data[p+3] = 0; // Make transparent in the closed door image
+                    maskData.data[p+3] = 255; // Solid black in the mask
+                } else {
+                    maskData.data[p+3] = 0; // Transparent in mask
+                }
+            }
+            ctxTex.putImageData(imgData, 0, 0);
+            ctxMask.putImageData(maskData, 0, 0);
+
+            return { tex: cTex, mask: cMask };
+        };
+
+        let closedRes = processDoorSprite(`${typeKey}_door_closed${idx}.webp`);
+        doorCanvases[typeKey][idx].closed = closedRes.tex;
+        doorCanvases[typeKey][idx].closedMask = closedRes.mask;
+
+        let openRes = processDoorSprite(`${typeKey}_door_open${idx}.webp`);
+        doorCanvases[typeKey][idx].open = openRes.tex;
+        doorCanvases[typeKey][idx].mask = openRes.mask;
+    }
+
+    return doorCanvases[typeKey][idx];
+}
+
 
 function getMaxSight() {
     if (window.isDark(player.x, player.y)) return 1;
@@ -586,11 +621,8 @@ window.getGlobalDungeonWall = function(style, idx) {
         let filename = `dungeon-wall-type-${style}${idx}`;
         let sprite = window.getDungeonAtlasSprite(filename);
 
-        if (sprite && sprite.image.complete && sprite.image.width > 0) {
-            c = document.createElement('canvas');
-            c.width = sprite.frame.w;
-            c.height = sprite.frame.h;
-            c.getContext('2d').drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, 0, 0, sprite.frame.w, sprite.frame.h);
+        c = window.createCanvasFromSprite(sprite);
+        if (c) {
             dungeonWallTextures[style][idx] = c;
         } else {
             if (!c) {
@@ -603,6 +635,7 @@ window.getGlobalDungeonWall = function(style, idx) {
     return c;
 };
 
+
 window.getGlobalDungeonGate = function(type, idx) {
     if (!globalDungeonGates[type]) globalDungeonGates[type] = [];
     let c = globalDungeonGates[type][idx];
@@ -612,11 +645,8 @@ window.getGlobalDungeonGate = function(type, idx) {
         let filename = `dungeon-gate-style-${type}${idx}`;
         let sprite = window.getDungeonAtlasSprite(filename);
 
-        if (sprite && sprite.image.complete && sprite.image.width > 0) {
-            c = document.createElement('canvas');
-            c.width = sprite.frame.w;
-            c.height = sprite.frame.h;
-            c.getContext('2d').drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, 0, 0, sprite.frame.w, sprite.frame.h);
+        c = window.createCanvasFromSprite(sprite);
+        if (c) {
             globalDungeonGates[type][idx] = c;
         } else {
             if (!c) {
@@ -726,18 +756,6 @@ function getChestTexture(mX, mY) {
     return chestCanvases[getHashIdx(mX, mY, 211, 223)];
 }
 
-function getDoorAsset(mX, mY, typeStr) {
-    if (!DOOR_TYPES[typeStr] || !doorCanvases[typeStr]) return {
-        tex: null,
-        cfg: null
-    };
-    let idx = getHashIdx(mX, mY, 227, 233);
-    return {
-        tex: doorCanvases[typeStr][idx],
-        cfg: DOOR_TYPES[typeStr]
-    };
-}
-
 function getDoor(xA, yA, xB, yB) {
     for (let d of doors) {
         // 🌟 FIX: Treat doors as full tiles! Check if the target tile (xB, yB) is a door.
@@ -789,13 +807,66 @@ function getRect(depth) {
     return { x: Math.round(viewCanvas.width / 2 - (w * s) / 2), y: Math.round(viewCanvas.height / 2 - (h * s) / 2), w: Math.round(w * s), h: Math.round(h * s) };
 }
 
-function drawSideWall(tex, xStart, xEnd, yTopStart, yTopEnd, yBotStart, yBotEnd, texStartX, texEndX, isOpenDoor = false, cfg = null, fillNear, fillFar, townCfg = null) {
+function getCompositedWall(wTex, dAst, state, fogStyle, fillNear, fillFar, flipTex) {
+    if (!wTex || wTex.width === 0) return wTex;
+
+    compBuffer.width = wTex.width;
+    compBuffer.height = wTex.height;
+    compCtx.clearRect(0, 0, compBuffer.width, compBuffer.height);
+
+    // 1. Draw Base Wall
+    compCtx.globalCompositeOperation = 'source-over';
+    compCtx.drawImage(wTex, 0, 0, compBuffer.width, compBuffer.height);
+
+    // 2. Door composite
+    if (dAst) {
+        if (state === 'closed' && dAst.closed) {
+            // 🌟 NEW: Punch hole through the wall if a mask was generated!
+            if (dAst.closedMask) {
+                compCtx.globalCompositeOperation = 'destination-out';
+                compCtx.drawImage(dAst.closedMask, 0, 0, compBuffer.width, compBuffer.height);
+            }
+            compCtx.globalCompositeOperation = 'source-over';
+            compCtx.drawImage(dAst.closed, 0, 0, compBuffer.width, compBuffer.height);
+
+        } else if (state === 'open' && dAst.open && dAst.mask) {
+            // Punch a hole through the wall using the Magenta Mask
+            compCtx.globalCompositeOperation = 'destination-out';
+            compCtx.drawImage(dAst.mask, 0, 0, compBuffer.width, compBuffer.height);
+            // Draw the open door frame over the punched wall
+            compCtx.globalCompositeOperation = 'source-over';
+            compCtx.drawImage(dAst.open, 0, 0, compBuffer.width, compBuffer.height);
+        }
+    }
+
+    // 3. Fog composite
+    if (fogStyle === 'solid' && fillNear) {
+        compCtx.globalCompositeOperation = 'source-atop';
+        compCtx.fillStyle = fillNear; 
+        compCtx.fillRect(0, 0, compBuffer.width, compBuffer.height);
+    } else if (fogStyle === 'gradient' && fillNear && fillFar) {
+        compCtx.globalCompositeOperation = 'source-atop';
+        let grad = compCtx.createLinearGradient(0, 0, compBuffer.width, 0);
+        if (flipTex) {
+            grad.addColorStop(0, fillFar);
+            grad.addColorStop(1, fillNear);
+        } else {
+            grad.addColorStop(0, fillNear);
+            grad.addColorStop(1, fillFar);
+        }
+        compCtx.fillStyle = grad;
+        compCtx.fillRect(0, 0, compBuffer.width, compBuffer.height);
+    }
+
+    compCtx.globalCompositeOperation = 'source-over';
+    return compBuffer;
+}
+
+
+function drawSideWall(tex, xStart, xEnd, yTopStart, yTopEnd, yBotStart, yBotEnd, texStartX, texEndX, townCfg = null) {
     let width = Math.round(xEnd - xStart); if (width === 0 || !tex || !tex.width) return;
     let dir = width > 0 ? 1 : -1, absWidth = Math.abs(width), texW = tex.width, texH = tex.height;
-    let grad = null; if (fillNear && fillFar) { grad = ctx.createLinearGradient(xStart, 0, xEnd, 0); grad.addColorStop(0, fillNear); grad.addColorStop(1, fillFar); }
-    let cT = (cfg && cfg.cropT) ? cfg.cropT : 0, cB = (cfg && cfg.cropB) ? cfg.cropB : 0, sY = texH * cT, sH = texH * (1 - cT - cB);
 
-    // 🌟 OPTIMIZED: Step size of 2 halves the amount of computationally expensive drawImage operations
     const STEP = 2;
     for (let i = 0; i <= absWidth; i += STEP) {
         let p = i / absWidth;
@@ -806,41 +877,25 @@ function drawSideWall(tex, xStart, xEnd, yTopStart, yTopEnd, yBotStart, yBotEnd,
         let drawWidth = Math.abs(nextX - curX);
 
         let dX = drawLeft;
-        let dW = drawWidth + 1; // +1 to prevent gaps, intentionally matching original 1px overlap
+        let dW = drawWidth + 1;
 
         let curYTop = yTopStart + (yTopEnd - yTopStart) * p, 
             curYBot = yBotStart + (yBotEnd - yBotStart) * p, 
             totalH = curYBot - curYTop, 
             texX = Math.max(0, Math.min(texW - 1, Math.floor(texStartX + (texEndX - texStartX) * p))); 
 
-        if (isOpenDoor && cfg && p > cfg.holeL && p < cfg.holeR) {
-            let topSliceH = totalH * cfg.holeT;
-            if (townCfg) {
-                let roofP = townCfg.roofP, ridgeY = curYTop + totalH * townCfg.ridgeSide, eaveY = curYTop + totalH * roofP;
-                if (topSliceH > totalH * roofP) { 
-                    ctx.drawImage(tex, texX, sY, 1, sH * roofP, dX, ridgeY - 1, dW, (eaveY - ridgeY) + 2); 
-                    let wallH_ratio = (topSliceH - totalH * roofP) / (totalH * (1 - roofP)); 
-                    ctx.drawImage(tex, texX, sY + sH * roofP, 1, sH * (1 - roofP) * wallH_ratio, dX, eaveY - 1, dW, topSliceH - (totalH * roofP) + 2); 
-                } else { 
-                    let roofH_ratio = topSliceH / (totalH * roofP); 
-                    ctx.drawImage(tex, texX, sY, 1, sH * roofP * roofH_ratio, dX, ridgeY - 1, dW, (eaveY - ridgeY) * roofH_ratio + 2); 
-                }
-            } else ctx.drawImage(tex, texX, sY, 1, sH * cfg.holeT, dX, curYTop - 1, dW, topSliceH + 1);
-            if (grad) { ctx.fillStyle = grad; ctx.fillRect(dX, townCfg ? curYTop + totalH * townCfg.ridgeSide - 1 : curYTop - 1, dW, topSliceH + 1); } continue; 
-        }
         if (townCfg) {
             let roofP = townCfg.roofP, ridgeY = curYTop + totalH * townCfg.ridgeSide, eaveY = curYTop + totalH * roofP;
-            ctx.drawImage(tex, texX, sY, 1, sH * roofP, dX, ridgeY - 1, dW, (eaveY - ridgeY) + 2); 
-            ctx.drawImage(tex, texX, sY + sH * roofP, 1, sH * (1 - roofP), dX, eaveY - 1, dW, (curYBot - eaveY) + 2);
-            if (grad) { ctx.fillStyle = grad; ctx.fillRect(dX, ridgeY - 1, dW, (curYBot - ridgeY) + 2); } 
+            ctx.drawImage(tex, texX, 0, 1, texH * roofP, dX, ridgeY - 1, dW, (eaveY - ridgeY) + 2); 
+            ctx.drawImage(tex, texX, texH * roofP, 1, texH * (1 - roofP), dX, eaveY - 1, dW, (curYBot - eaveY) + 2);
             ctx.fillStyle = `rgba(0,0,0,0.3)`; 
             ctx.fillRect(dX, eaveY - 1, dW, totalH * townCfg.shadowH);
         } else { 
-            ctx.drawImage(tex, texX, sY, 1, sH, dX, curYTop - 1, dW, (curYBot - curYTop) + 2); 
-            if (grad) { ctx.fillStyle = grad; ctx.fillRect(dX, curYTop - 1, dW, (curYBot - curYTop) + 2); } 
+            ctx.drawImage(tex, texX, 0, 1, texH, dX, curYTop - 1, dW, (curYBot - curYTop) + 2); 
         }
     }
 }
+
 
 function drawHorizontalTrapezoid(tex, xNearLeft, xNearRight, xFarLeft, xFarRight, yNear, yFar, fillNear, fillFar, srcY, srcH) {
     let height = yFar - yNear;
@@ -986,18 +1041,15 @@ function drawView() {
     floorGrad.addColorStop(1, baseDirtColor);
     ctx.fillStyle = floorGrad;
     ctx.fillRect(0, viewCanvas.height / 2, viewCanvas.width, viewCanvas.height / 2);
+
     let maxVisible = getMaxSight();
-    if (typeof window.gameState !== 'undefined' && window.gameState === 'COMBAT') maxVisible = Math.max(getMaxSight(), typeof window.combatState !== 'undefined' ? window.combatState.distance + 1 : getMaxSight());
-    for (let d = maxVisible; d > 0; d--) {
-        let tpX = player.x + dx[player.dir] * (d - 1),
-            tpY = player.y + dy[player.dir] * (d - 1),
-            tcX = player.x + dx[player.dir] * d,
-            tcY = player.y + dy[player.dir] * d;
-        if (getDoor(tpX, tpY, tcX, tcY)?.state === 'closed') {
-            maxVisible = d;
-            break;
-        }
+    if (typeof window.gameState !== 'undefined' && window.gameState === 'COMBAT') {
+        maxVisible = Math.max(getMaxSight(), typeof window.combatState !== 'undefined' ? window.combatState.distance + 1 : getMaxSight());
     }
+
+    // 🌟 FIX: Removed the loop that forced maxVisible to stop at closed doors.
+    // The renderer will now draw the geometry behind the door, allowing the magenta 
+    // chroma-keyed transparency holes to show the hallway behind it!
 
     // Store Y coordinates to ensure seamless connection between trapezoids
     let prevCeilY = 0;
@@ -1062,7 +1114,6 @@ function drawView() {
 
 			let wallEnt = entities.find(e => (e.wallX === mX && e.wallY === mY) || (e.x === mX && e.y === mY));
 
-			// 🌟 FIX: Ensure forge_interaction is explicitly identified
 			let isWallEntity = wallEnt && (
 				wallEnt.type === 'shop' || 
 				wallEnt.type === 'dungeon_gate' || 
@@ -1119,54 +1170,26 @@ function drawView() {
 				} else ctx.drawImage(tex, sX, sY, sW, sH, dX, dY, dW, dH);
 			};
 
-			if ((cellVal >= 1) || (dObj && dObj.state === 'closed') || isWallEntity) {
+			if ((cellVal >= 1) || dObj || isWallEntity) {
 				let wTex = getTextureForWallAt(mX, mY); 
-				if (wTex && wTex.width > 0) drawTex(wTex, 0, 0, wTex.width, wTex.height, dX, dY, dW, dH);
+                // 🌟 FIX: Prioritize map-level doorType if set, otherwise fallback to door's type
+                let dType = dObj ? (dObj.doorType || worldMaps[currentMapId].doorType || dObj.type) : null;
+                let dAst = dObj ? getDoorAsset(mX, mY, dType) : null;
 
-				if (dObj && dObj.state === 'closed') {
-					let dAst = getDoorAsset(mX, mY, dObj.type);
-					if (dAst && dAst.tex) {
-						let cT = dAst.cfg.cropT || 0;
-						let cB = dAst.cfg.cropB || 0;
-						let sY = dAst.tex.height * cT;
-						let sH = dAst.tex.height * (1 - cT - cB);
-						drawTex(dAst.tex, 0, sY, dAst.tex.width, sH, dX, dY, dW, dH);
-					}
-				}
+                // 🌟 Let the Compositor layer the wall, door, and fog directly into the texture
+                let compTex = getCompositedWall(wTex, dAst, dObj ? dObj.state : null, 'solid', fogFar, null, false);
 
-				ctx.fillStyle = fogFar;
+                if (compTex && compTex.width > 0) {
+                    drawTex(compTex, 0, 0, compTex.width, compTex.height, dX, dY, dW, dH);
+                }
+
 				if (isTown) {
-					ctx.fillRect(dX, ridgeY, dW, eaveY - ridgeY);
-					ctx.fillRect(dX, eaveY, dW, dH * (1 - roofP));
 					ctx.fillStyle = 'rgba(0,0,0,0.3)';
 					ctx.fillRect(dX, eaveY, dW, dH * hCfg.shadowH);
-				} else ctx.fillRect(dX, dY, dW, dH);
-			} 
-			else if (dObj && dObj.state === 'open') {
-				let wTex = getTextureForWallAt(mX, mY),
-					dAst = getDoorAsset(mX, mY, dObj.type);
-				if (wTex && wTex.width > 0 && dAst.cfg) {
-					const drawHoleObj = (tex, tW, tH, useCrop) => {
-						if (!tex || tex.width === 0) return;
-						let cT = useCrop ? (dAst.cfg.cropT || 0) : 0,
-							cB = useCrop ? (dAst.cfg.cropB || 0) : 0,
-							sY = tH * cT,
-							sH = tH * (1 - cT - cB);
-
-						drawTex(tex, 0, sY, tW * dAst.cfg.holeL, sH, dX, dY, rect.w * dAst.cfg.holeL + O, dH);
-						drawTex(tex, tW * dAst.cfg.holeR, sY, tW * (1 - dAst.cfg.holeR), sH, fL + (rect.w * dAst.cfg.holeR) - O, dY, rect.w * (1 - dAst.cfg.holeR) + O, dH);
-						drawTex(tex, tW * dAst.cfg.holeL, sY, tW * (dAst.cfg.holeR - dAst.cfg.holeL), sH * dAst.cfg.holeT, fL + (rect.w * dAst.cfg.holeL) - O, dY, rect.w * (dAst.cfg.holeR - dAst.cfg.holeL) + (O * 2), rect.h * dAst.cfg.holeT + O);
-					};
-
-					drawHoleObj(wTex, wTex.width, wTex.height, false);                    
-
-					if (dAst.tex) drawHoleObj(dAst.tex, dAst.tex.width, dAst.tex.height, true);
-
-					ctx.fillStyle = fogFar;
-					ctx.fillRect(dX, dY, dW, dH);
-				}
+				} 
 			}
 		};
+
 
 		const doSideWall = (chkX, chkY, originX, originY, offset, isRight) => {
             let outerVal = map[chkY] ? map[chkY][chkX] : 0,
@@ -1183,28 +1206,23 @@ function drawView() {
                 fStart = rect.x + (rect.w * offset),
                 townCfg = worldMaps[currentMapId].theme === 'town' ? getTownHouseCfg(targetX, targetY) : null;
 
-            // 🌟 FORCE: Use our robust texture fetcher
             let tex = getTextureForWallAt(targetX, targetY);
+            // 🌟 FIX: Prioritize map-level doorType if set, otherwise fallback to door's type
+            let dType = door ? (door.doorType || worldMaps[currentMapId].doorType || door.type) : null;
+            let dAst = door ? getDoorAsset(targetX, targetY, dType) : null;
 
             let flipTex = isRight; 
             let texS = flipTex ? (tex ? tex.width : 512) : 0,
                 texE = flipTex ? 0 : (tex ? tex.width : 512);
 
-            // 🌟 FIX: Treat gates as solid walls when viewing from the side
-            if (isGate) {
-                 drawSideWall(tex, pStart, fStart, pRect.y - O, rect.y + O, pRect.y + pRect.h + O, rect.y + rect.h - O, texS, texE, false, null, fogNear, fogFar, townCfg);
-            } else if (!door || door.state === 'closed') {
-                drawSideWall(tex, pStart, fStart, pRect.y - O, rect.y + O, pRect.y + pRect.h + O, rect.y + rect.h - O, texS, texE, false, null, fogNear, fogFar, townCfg);
-                if (door && door.state === 'closed') {
-                    let dAst = getDoorAsset(targetX, targetY, door.type);
-                    if (dAst && dAst.tex) drawSideWall(dAst.tex, pStart, fStart, pRect.y - O, rect.y + O, pRect.y + pRect.h + O, rect.y + rect.h - O, flipTex ? dAst.tex.width : 0, flipTex ? 0 : dAst.tex.width, false, dAst.cfg, fogNear, fogFar, null);
-                }
-            } else if (door && door.state === 'open') {
-                let dAst = getDoorAsset(targetX, targetY, door.type);
-                drawSideWall(tex, pStart, fStart, pRect.y - O, rect.y + O, pRect.y + pRect.h + O, rect.y + rect.h - O, texS, texE, true, dAst.cfg, null, null, townCfg);
-                if (dAst && dAst.tex) drawSideWall(dAst.tex, pStart, fStart, pRect.y - O, rect.y + O, pRect.y + pRect.h + O, rect.y + rect.h - O, flipTex ? dAst.tex.width : 0, flipTex ? 0 : dAst.tex.width, true, dAst.cfg, fogNear, fogFar, null);
+            // 🌟 Composite the texture (combining wall, door state, and depth fog perfectly)
+            let compTex = getCompositedWall(tex, dAst, door ? door.state : null, 'gradient', fogNear, fogFar, flipTex);
+
+            if (compTex) {
+                drawSideWall(compTex, pStart, fStart, pRect.y - O, rect.y + O, pRect.y + pRect.h + O, rect.y + rect.h - O, texS, texE, townCfg);
             }
         };
+
 
         let maxSide = Math.min(25, Math.ceil((viewCanvas.width / 2) / rect.w) + 1);
         for (let i = maxSide; i >= 1; i--) {
@@ -1262,7 +1280,17 @@ function drawView() {
 					sprW = sprH,
 					sprX = rect.x + (rect.w - sprW) / 2,
 					sprY = rect.y + rect.h - sprH;
-				ctx.drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, sprX, sprY, sprW, sprH);
+                if (sprite.trimmed && sprite.sourceSize) {
+                    let scaleX = sprW / sprite.sourceSize.w;
+                    let scaleY = sprH / sprite.sourceSize.h;
+                    let destX = sprX + (sprite.spriteSourceSize.x * scaleX);
+                    let destY = sprY + (sprite.spriteSourceSize.y * scaleY);
+                    let destW = sprite.frame.w * scaleX;
+                    let destH = sprite.frame.h * scaleY;
+                    ctx.drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, destX, destY, destW, destH);
+                } else {
+				    ctx.drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, sprX, sprY, sprW, sprH);
+                }
 			}
 		} 
 		// 🌟 UPDATED: Render Entities (Chests, Enemies, etc.)
@@ -1285,7 +1313,17 @@ function drawView() {
 								let portraitStr = eData.portraits[Math.abs(mX * 73 + mY * 89) % eData.portraits.length].replace('.png', '.webp');
 								let sprite = window.getAtlasSprite(portraitStr);
 								if (sprite && sprite.image.complete) {
-									ctx.drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, sprX, rect.y + rect.h - sprH, sprW, sprH);
+                                    if (sprite.trimmed && sprite.sourceSize) {
+                                        let scaleX = sprW / sprite.sourceSize.w;
+                                        let scaleY = sprH / sprite.sourceSize.h;
+                                        let destX = sprX + (sprite.spriteSourceSize.x * scaleX);
+                                        let destY = rect.y + rect.h - sprH + (sprite.spriteSourceSize.y * scaleY);
+                                        let destW = sprite.frame.w * scaleX;
+                                        let destH = sprite.frame.h * scaleY;
+                                        ctx.drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, destX, destY, destW, destH);
+                                    } else {
+									    ctx.drawImage(sprite.image, sprite.frame.x, sprite.frame.y, sprite.frame.w, sprite.frame.h, sprX, rect.y + rect.h - sprH, sprW, sprH);
+                                    }
 								}
 							}
 						} else if (ent.type === 'transition' && !ent.wallX) {
@@ -1354,6 +1392,7 @@ function drawView() {
         ctx.filter = 'none';
     }
 }
+
 
 
 // 🛡️ Master Shop Icon Dictionary & Colors

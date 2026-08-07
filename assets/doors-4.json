@@ -1,0 +1,229 @@
+{"frames": [
+
+{
+	"filename": "gloom_door_closed0.webp",
+	"frame": {"x":939,"y":946,"w":307,"h":499},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":104,"y":13,"w":307,"h":499},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_closed1.webp",
+	"frame": {"x":1557,"y":955,"w":300,"h":502},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":106,"y":10,"w":300,"h":502},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_closed7.webp",
+	"frame": {"x":319,"y":921,"w":308,"h":499},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":102,"y":13,"w":308,"h":499},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_open0.webp",
+	"frame": {"x":1248,"y":955,"w":307,"h":499},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":104,"y":13,"w":307,"h":499},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_door_open7.webp",
+	"frame": {"x":629,"y":946,"w":308,"h":499},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":102,"y":13,"w":308,"h":499},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_closed0.webp",
+	"frame": {"x":1,"y":1,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_closed1.webp",
+	"frame": {"x":243,"y":1,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_closed2.webp",
+	"frame": {"x":485,"y":1,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_closed3.webp",
+	"frame": {"x":727,"y":1,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_closed4.webp",
+	"frame": {"x":969,"y":1,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_closed5.webp",
+	"frame": {"x":1211,"y":1,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_closed6.webp",
+	"frame": {"x":1453,"y":1,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_closed7.webp",
+	"frame": {"x":1695,"y":1,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_closed8.webp",
+	"frame": {"x":1,"y":461,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_closed9.webp",
+	"frame": {"x":243,"y":461,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_door_open0.webp",
+	"frame": {"x":485,"y":461,"w":240,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":136,"y":54,"w":240,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "keep_door_closed2.webp",
+	"frame": {"x":727,"y":461,"w":316,"h":483},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":98,"y":29,"w":316,"h":483},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "keep_door_closed5.webp",
+	"frame": {"x":1363,"y":461,"w":316,"h":492},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":98,"y":20,"w":316,"h":492},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "keep_door_open2.webp",
+	"frame": {"x":1045,"y":461,"w":316,"h":483},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":98,"y":29,"w":316,"h":483},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "keep_door_open4.webp",
+	"frame": {"x":1681,"y":461,"w":316,"h":492},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":98,"y":20,"w":316,"h":492},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "keep_door_open5.webp",
+	"frame": {"x":1,"y":921,"w":316,"h":492},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":98,"y":20,"w":316,"h":492},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_door_closed3.webp",
+	"frame": {"x":1211,"y":1456,"w":298,"h":506},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":6,"w":298,"h":506},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_door_closed4.webp",
+	"frame": {"x":1511,"y":1459,"w":298,"h":506},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":110,"y":6,"w":298,"h":506},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_door_closed8.webp",
+	"frame": {"x":1,"y":1415,"w":300,"h":505},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":109,"y":7,"w":300,"h":505},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_door_closed9.webp",
+	"frame": {"x":605,"y":1447,"w":301,"h":506},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":107,"y":6,"w":301,"h":506},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_door_open8.webp",
+	"frame": {"x":303,"y":1422,"w":300,"h":505},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":109,"y":7,"w":300,"h":505},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_door_open9.webp",
+	"frame": {"x":908,"y":1447,"w":301,"h":506},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":107,"y":6,"w":301,"h":506},
+	"sourceSize": {"w":512,"h":512}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "doors-4.webp",
+	"format": "RGBA8888",
+	"size": {"w":1998,"h":1966},
+	"scale": "1",
+	"related_multi_packs": [ "doors-0.json", "doors-1.json", "doors-2.json", "doors-3.json", "doors-5.json", "doors-6.json", "doors-7.json", "doors-8.json", "doors-9.json" ],
+	"smartupdate": "$TexturePacker:SmartUpdate:689475020ec26dc6ce5a12489c7b8215:6739ecea6618514faa9b1352bed7039b:8607d55d39d9acd4ad5e6110b8e446ed$"
+}
+}
