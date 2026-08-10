@@ -406,6 +406,16 @@ button:disabled { filter: grayscale(100%) opacity(0.5); cursor: not-allowed; }
 .item-slot.empty { background: #444; }
 
 /* Drag and Drop Item Feedback */
+
+.item-slot.drag-valid { 
+    border-color: #00ff00 !important; 
+    box-shadow: inset 0 0 15px rgba(0,255,0,0.5) !important; 
+}
+.item-slot.drag-invalid { 
+    border-color: #ff0000 !important; 
+    box-shadow: inset 0 0 15px rgba(255,0,0,0.5) !important; 
+}
+
 .item-slot.dragging { opacity: 0.4; border-color: #b8860b; transform: scale(0.9); }
 .item-slot.drag-over { border-color: #00ff00; box-shadow: inset 0 0 15px rgba(0,255,0,0.5); }
 .item-icon, .item-qty, .placeholder-icon { pointer-events: none; } /* Prevents drag jitter */

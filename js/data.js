@@ -1,14 +1,14 @@
 // js/data.js
 // /mnt/AppPool/lyrewight1_app/src/update_maps.sh
 
-let currentMapId = "vaults_1";
-const player = { x: 7, y: 19, dir: 0 }; // Change 0 to 0 (North), 1 (East), 2 (South), or 3 (West)
+//let currentMapId = "vaults_1";
+//const player = { x: 7, y: 19, dir: 0 }; // Change 0 to 0 (North), 1 (East), 2 (South), or 3 (West)
 
 //let currentMapId = "the_lair_1";
 //const player = { x: 7, y: 11, dir: 3 }; 
 
-//let currentMapId = "white_palace_5";
-//const player = { x: 23, y: 29, dir: 0 }; 
+let currentMapId = "white_palace_5";
+const player = { x: 23, y: 29, dir: 0 }; 
 
 const sharedInventory = new Array(100).fill(null);
 const questInventory = []; // 🌟 NEW: Separate unlimited quest storage

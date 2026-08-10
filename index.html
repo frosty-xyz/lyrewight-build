@@ -92,12 +92,28 @@
 </div>
 
 <!-- 🌟 GAME OVER SCREEN 🌟 -->
-<div id="game-over-screen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; font-family: 'Georgia', serif;">
-    <div class="scalable-modal" style="background: #e8dcc4; background-image: url('assets/parchment.webp'); background-size: 128px; border: 6px solid #332211; padding: 40px; text-align: center; box-shadow: inset 0 0 50px rgba(139, 69, 19, 0.4), 10px 10px 20px rgba(0,0,0,0.8); border-radius: 4px; max-width: 600px; width: 100%;">
-        <h1 style="margin: 0 0 10px 0; font-size: 3.5rem; color: #5a2e0e; text-shadow: 1px 1px 0px rgba(255,255,255,0.5); line-height: 1.1;">Game Over</h1>
-        <div style="font-size: 1.2rem; color: #444; margin-bottom: 30px; font-style: italic; font-weight: bold;">Restart game</div>
+<div id="game-over-screen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 9999; display: none; justify-content: center; align-items: center; font-family: 'Georgia', serif;">
+    <div class="scalable-modal" style="position: relative; background-image: url('assets/game_over.webp'); background-size: 100% 100%; background-repeat: no-repeat; width: 1280px; height: 800px; border: 6px solid #111; box-shadow: 0 0 50px rgba(0,0,0,0.9); border-radius: 4px; box-sizing: border-box;">
 
-        <button id="btn-restart-game" style="width: 250px; height: 60px; margin: 0 auto; background: #8b0000; color: #fff; border-color: #440000;">Restart</button>
+        <!-- 🌟 TITLE -->
+        <h1 style="position: absolute; top: 6%; left: 0; width: 100%; text-align: center; font-size: 6rem; color: #aa0000; text-shadow: 4px 4px 10px #000, -2px -2px 0 #440000, 2px -2px 0 #440000; margin: 0; letter-spacing: 6px; font-family: 'Almendra', serif;">GAME OVER</h1>
+
+        <!-- 🪦 DYNAMIC GRAVESTONE TEXTS -->
+        <div id="grave-name-0" style="position: absolute; left: 30.3%; top: 61%; transform: translate(-50%, -50%); width: 117px; text-align: center; color: #2a2a2a; font-size: 1.5rem; font-weight: bold; text-shadow: -1px -1px 1px rgba(0,0,0,0.8), 1px 1px 1px rgba(255,255,255,0.2); font-family: 'Almendra', serif; line-height: 1.1;"></div>
+        <div id="grave-name-1" style="position: absolute; left: 50.1%; top: 61%; transform: translate(-50%, -50%); width: 117px; text-align: center; color: #2a2a2a; font-size: 1.5rem; font-weight: bold; text-shadow: -1px -1px 1px rgba(0,0,0,0.8), 1px 1px 1px rgba(255,255,255,0.2); font-family: 'Almendra', serif; line-height: 1.1;"></div>
+        <div id="grave-name-2" style="position: absolute; left: 69.8%; top: 61%; transform: translate(-50%, -50%); width: 117px; text-align: center; color: #2a2a2a; font-size: 1.5rem; font-weight: bold; text-shadow: -1px -1px 1px rgba(0,0,0,0.8), 1px 1px 1px rgba(255,255,255,0.2); font-family: 'Almendra', serif; line-height: 1.1;"></div>
+        <div id="grave-name-3" style="position: absolute; left: 37%; top: 50%; transform: translate(-50%, -50%); width: 100px; text-align: center; color: #2a2a2a; font-size: 1.1rem; font-weight: bold; text-shadow: -1px -1px 1px rgba(0,0,0,0.8), 1px 1px 1px rgba(255,255,255,0.2); font-family: 'Almendra', serif; line-height: 1.1;"></div>
+        <div id="grave-name-4" style="position: absolute; left: 50.1%; top: 50%; transform: translate(-50%, -50%); width: 100px; text-align: center; color: #2a2a2a; font-size: 1.1rem; font-weight: bold; text-shadow: -1px -1px 1px rgba(0,0,0,0.8), 1px 1px 1px rgba(255,255,255,0.2); font-family: 'Almendra', serif; line-height: 1.1;"></div>
+        <div id="grave-name-5" style="position: absolute; left: 63.2%; top: 50%; transform: translate(-50%, -50%); width: 100px; text-align: center; color: #2a2a2a; font-size: 1.1rem; font-weight: bold; text-shadow: -1px -1px 1px rgba(0,0,0,0.8), 1px 1px 1px rgba(255,255,255,0.2); font-family: 'Almendra', serif; line-height: 1.1;"></div>
+
+        <!-- 🔘 HORIZONTAL BUTTON LAYOUT -->
+        <div style="position: absolute; bottom: 5%; left: 0; width: 100%; display: flex; justify-content: center; gap: 20px; padding: 0 40px; box-sizing: border-box;">
+            <button id="btn-go-quickload" style="flex: 1; height: 60px; background: #555; color: #fff; border-color: #333; font-size: 1.3rem;">Quickload</button>
+            <button id="btn-go-load" style="flex: 1; height: 60px; background: #555; color: #fff; border-color: #333; font-size: 1.3rem;">Load File</button>
+            <button id="btn-go-restart-vaults" style="flex: 1; height: 60px; background: #44aa44; color: #fff; border-color: #006600; font-size: 1.3rem;">Restart from Vaults</button>
+            <button id="btn-go-restart-guild" style="flex: 1; height: 60px; background: #88aa44; color: #fff; border-color: #446600; font-size: 1.3rem;">Restart from Guild</button>
+        </div>
+
     </div>
 </div>
 
@@ -167,28 +183,37 @@
         </div>
 
 		<!-- 3. TOP-RIGHT: Minimap -->
-        <div id="zone-tr" class="ui-zone" style="display: flex; flex-direction: column; padding: 15px 25px 15px 15px; box-sizing: border-box;">
-            <div id="minimap-panel" style="flex:1; display:flex; flex-direction:row; align-items: center; gap: 10px; height: 100%;">
-                
+        <div id="zone-tr" class="ui-zone" style="display: flex; flex-direction: row; justify-content: flex-end; padding: 15px 25px 15px 15px; box-sizing: border-box; gap: 10px;">
+            <div id="minimap-panel" style="flex:1; display:flex; flex-direction:row; align-items: center; gap: 10px; height: 100%; min-width: 0;">
+
                 <!-- The Canvas (Left) -->
-                <canvas id="minimap-canvas" width="300" height="300" style="height:100%; aspect-ratio: 1/1; object-fit:contain; border: 2px solid #5a2e0e; border-radius: 4px; background:transparent;"></canvas>
-                
+                <canvas id="minimap-canvas" width="300" height="300" style="height:100%; aspect-ratio: 1/1; object-fit:contain; border: 2px solid #5a2e0e; border-radius: 4px; background:transparent; flex-shrink: 0;"></canvas>
+
                 <!-- The Legend (Middle) -->
                 <div id="minimap-legend-box" class="minimap-legend" style="flex:1; display:flex; flex-direction:column; justify-content: center; gap: 4px; font-size: 0.8rem; overflow-y: auto; height: 100%;"></div>
-
-               <!-- 🔍 Zoom Controls (Right) -->
-                <div style="display:flex; flex-direction:column; gap:4px; justify-content:center; flex: 0 0 32%;">
-					<!-- 🧪 DEBUG COORDINATES -->
-					<div id="debug-coords" style="display:none; font-family:monospace; font-size:0.8rem; text-align:center; color:#5a2e0e; font-weight:bold; background:rgba(255,255,255,0.3); border-radius:3px; padding:2px;">X: 0, Y: 0</div>
-
-					<div style="display:flex; gap:4px;">
-						<button id="btn-mm-zoom-in" style="flex:1;">+</button>
-						<button id="btn-mm-zoom-out" style="flex:1;">-</button>
-					</div>
-					<button id="btn-mm-full" style="width: 100%; aspect-ratio: 4.2 / 1; flex: 0 0 auto; font-size: 1.1rem;">Map</button>
-					<button id="btn-options" style="width: 100%; aspect-ratio: 4.2 / 1; flex: 0 0 auto; font-size: 1.1rem;">Options</button>
-				</div>			   
             </div>
+
+            <!-- 🔍 Controls (Right) -->
+            <div style="display:flex; flex-direction:column; gap:6px; justify-content:flex-end; flex: 0 0 32%; height: 60%; padding-top: 40px;">
+
+                <!-- These buttons will be hidden dynamically during combat -->
+                <div id="minimap-controls" style="display:flex; flex-direction:column; gap:6px; flex: 1; min-height: 0;">
+                    <!-- 🧪 DEBUG COORDINATES -->
+                    <div id="debug-coords" style="display:none; font-family:monospace; font-size:0.8rem; text-align:center; color:#5a2e0e; font-weight:bold; background:rgba(255,255,255,0.3); border-radius:3px; padding:2px;">X: 0, Y: 0</div>
+
+                    <!-- Row 1: Zoom Controls -->
+                    <div style="display:flex; gap:6px; flex: 1; min-height: 0;">
+                        <button id="btn-mm-zoom-in" style="flex: 1 0 calc((100% - 12px) / 3); margin: 0; min-height: 0; margin: 0; font-size: 1.5rem; font-weight: bold;">+</button>
+                        <button id="btn-mm-zoom-out" style="flex: 1 0 calc((100% - 12px) / 3); margin: 0; min-height: 0; margin: 0; font-size: 1.5rem; font-weight: bold;">-</button>
+                    </div>
+
+                    <!-- Row 2: Map Button -->
+                    <button id="btn-mm-full" style="flex: 0 0 calc((100% - 12px) / 2); margin: 0; min-height: 0; font-size: 1.1rem;">Map</button>
+                </div>
+
+                <!-- ⚙️ Options Button: Row 3 (Stays exact 1/3 height when minimap controls are hidden in combat) -->
+                <button id="btn-options" style="flex: 0 0 calc((100% - 12px) / 3); margin: 0; min-height: 0; font-size: 1.1rem;">Options</button>
+            </div>		   
         </div>
 	
         <!-- 4. MIDDLE-RIGHT: Message Log -->
@@ -746,7 +771,7 @@
 </div>
 
 <script>
-    const GAME_VERSION = "1.0.9";
+    const GAME_VERSION = "1.0.10";
 
     // 🌟 PERFECT SCALING ENGINE
     window.resizeGame = function() {

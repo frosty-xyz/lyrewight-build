@@ -1892,7 +1892,7 @@ function drawMinimap() {
     }
 }
 
-function renderParty() {
+window.renderParty = function() {
     const listEl = document.getElementById('party-list');
 
     // 🌟 NEW: Class Styling Configuration mapped for the Roster
@@ -1906,13 +1906,15 @@ function renderParty() {
         "Summon":  { color: "#aa44ff", icon: "&#xe9a5;" }  // Default Summon (Monster/Dragon)
     };
 
-    // 🌟 UPDATED: Widened the final column (1.5fr) to fit the text + icon gracefully
+    // 🌟 UPDATED: Added title tooltips to header columns
     listEl.innerHTML = `
         <div class="roster-header" style="grid-template-columns: 20px 30px 4fr 1fr 2.5fr 2.5fr 1.5fr;">
             <div></div><div class="col-num">#</div>
-            <div style="padding-left: 60px;">NAME</div><div class="col-ac">AC</div>
-            <div style="text-align:center;">HP</div><div style="text-align:center;">SP</div>
-            <div class="col-cl">CLS</div>
+            <div style="padding-left: 60px;">NAME</div>
+            <div class="col-ac" title="Armor Class: Reduces physical damage. Lower values are better.">AC</div>
+            <div style="text-align:center;" title="Hit Points (HP): Your physical vitality. If this reaches 0, you fall in battle.">HP</div>
+            <div style="text-align:center;" title="Skill Points (SP) & Songs: SP fuels magic for Mages and Healers. Bards use Songs to power their unique abilities.">SP</div>
+            <div class="col-cl" title="Class: Defines your role, equipment limitations, and unique combat mechanics.">CLS</div>
         </div>`;
 
     party.forEach((char, index) => {
@@ -1958,7 +1960,7 @@ function renderParty() {
             let spPct = hasSp ? Math.max(0, (char.mp / char.maxMp) * 100) : 0;
             let resLabel = char.class === 'Bard' ? 'Songs' : 'SP';
             let resColor = char.class === 'Bard' ? '#cc5500' : '#0044aa';
-            let spHtml = hasSp ? `<div class="roster-bar-bg" title="${resLabel}: ${char.mp}/${char.maxMp}"><div class="roster-bar-fill" style="width:${spPct}%; background-color:${resColor};"></div><span class="roster-bar-text">${char.mp}/${char.maxMp}</span></div>` : ``;
+            let spHtml = hasSp ? `<div class="roster-bar-bg" title="${resLabel}: ${Math.floor(char.mp)}/${char.maxMp}"><div class="roster-bar-fill" style="width:${spPct}%; background-color:${resColor};"></div><span class="roster-bar-text">${Math.floor(char.mp)}/${char.maxMp}</span></div>` : ``;
             let aIcon = char.ailments && char.ailments.length > 0 ? `<span style="font-size: 0.9rem; margin-right: 4px;" title="${char.ailments.join(', ')}">${AILMENT_ICONS[char.ailments[0]] || '❓'}</span>` : '';
 
             // 🌟 NEW: Format the Class string with correct colors and RPG Awesome icons
@@ -2014,8 +2016,7 @@ function renderParty() {
         }
         listEl.appendChild(charEl);
     });
-}
-
+};
 
 let dragStartIndex = null;
 function handleDragStart(e) { dragStartIndex = parseInt(this.dataset.index); this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/html', this.innerHTML); }

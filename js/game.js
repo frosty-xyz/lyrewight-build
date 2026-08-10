@@ -1,5 +1,5 @@
 // js/game.js
-
+window.DEBUG_START_LEVEL = 1;
 document.getElementById('ui-version-tag').innerText = "v" + GAME_VERSION;
 document.getElementById('start-version-tag').innerText = "v" + GAME_VERSION;
 
@@ -501,7 +501,7 @@ function logMsg(msg) {
 }
 
 window.cleanPartyRoster = function() {
-    // 1. Filter out dead summons
+    // 1. Filter out dead summons (This line is correct)
     let active = party.filter(p => !(p.isSummon && p.hp <= 0));
 
     // 2. Pad back to 6 slots using the "Empty" structure
@@ -847,6 +847,8 @@ function updateUIState() {
 
     uiBg.classList.remove('solid-mode'); 
 
+    let mmCtrls = document.getElementById('minimap-controls');
+
     if (window.gameState === 'EXPLORE') {
         if (window.isInsideHouse) document.getElementById('house-interior-view').style.display = 'flex';
         else document.getElementById('house-interior-view').style.display = 'none';
@@ -856,6 +858,7 @@ function updateUIState() {
         document.getElementById('encounter-view').style.display = 'none';
         document.getElementById('victory-screen').style.display = 'none';
         document.getElementById('minimap-panel').style.display = 'flex';
+        if (mmCtrls) mmCtrls.style.display = 'flex';
         document.getElementById('explore-panel').style.display = 'flex';
         document.getElementById('combat-panel').style.display = 'none';
         checkInteractable();
@@ -865,6 +868,7 @@ function updateUIState() {
         document.getElementById('canvas-container').style.display = 'none'; 
         document.getElementById('explore-panel').style.display = 'none';
         document.getElementById('minimap-panel').style.display = 'none'; 
+        if (mmCtrls) mmCtrls.style.display = 'none';
         document.getElementById('pre-combat-view').style.display = 'flex';
     }
     else if (window.gameState === 'COMBAT') {
@@ -873,12 +877,15 @@ function updateUIState() {
         document.getElementById('pre-combat-view').style.display = 'none';
         document.getElementById('encounter-view').style.display = 'flex'; 
         document.getElementById('combat-panel').style.display = 'flex';
+        document.getElementById('minimap-panel').style.display = 'none'; 
+        if (mmCtrls) mmCtrls.style.display = 'none';
     }
     else if (window.gameState === 'VICTORY') {
         if (zoneLoc) zoneLoc.style.display = 'none'; 
         document.getElementById('canvas-container').style.display = 'none'; 
         document.getElementById('encounter-view').style.display = 'none';
         document.getElementById('minimap-panel').style.display = 'none'; 
+        if (mmCtrls) mmCtrls.style.display = 'none';
         document.getElementById('victory-screen').style.display = 'flex'; 
         document.getElementById('explore-panel').style.display = 'none';
         document.getElementById('combat-panel').style.display = 'none';
@@ -888,6 +895,7 @@ function updateUIState() {
         document.getElementById('canvas-container').style.display = 'none';
         document.getElementById('explore-panel').style.display = 'none';
         document.getElementById('minimap-panel').style.display = 'none'; 
+        if (mmCtrls) mmCtrls.style.display = 'none';
         document.getElementById('pre-combat-view').style.display = 'none';
         document.getElementById('encounter-view').style.display = 'none';
         document.getElementById('victory-screen').style.display = 'none';
@@ -1564,8 +1572,19 @@ document.getElementById('btn-start-combat').addEventListener('click', () => {
 
     let enemies = window.combatState.enemies;
     let isSingle = enemies.length === 1;
-    let name = isSingle ? (enemies[0].customName || enemies[0].data.name) : "the horde";
-    let logMsgText = isSingle ? `${name} attacks!` : `the horde attacks!`;
+
+    // 🌟 FIX: Smart Article Capitalization for Combat entry text!
+    let name = "The horde";
+    if (isSingle) {
+        let e = enemies[0];
+        if (e.customName) {
+            name = e.customName;
+        } else {
+            let art = window.getArticle(e.data.name);
+            let combined = art ? `${art} ${e.data.name}` : e.data.name;
+            name = combined.charAt(0).toUpperCase() + combined.slice(1);
+        }
+    }
 
     // 🌟 DYNAMIC LOG: Check for Gatekeeper/Guardian
     if (window.activeGatekeeperId) {
@@ -1573,7 +1592,7 @@ document.getElementById('btn-start-combat').addEventListener('click', () => {
     } else if (window.activeGuardianId) {
         logMsg(`<span class="log-combat">Combat!</span> The guardian attacks!`);
     } else {
-        logMsg(`<span class="log-combat">Combat!</span> ${isSingle ? name : "The horde"} attacks!`);
+        logMsg(`<span class="log-combat">Combat!</span> ${name} attacks!`);
     }
 
     if (window.combatState.isAmbush) { 
@@ -1871,7 +1890,8 @@ window.showAllyPicker = function(spellId, casterIndex, mode) {
         let ailmentText = "";
 
         if (spell.type === 'revive') {
-            isValid = p.hp <= 0;
+            // 🌟 FIX: Only allow revive if dead AND not a summon
+            isValid = p.hp <= 0 && !p.isSummon;
             ailmentText = (p.hp <= 0) ? "Dead" : "Alive";
         } else if (spell.type === 'cure') {
             // Valid if they have at least one of the ailments the specific spell cures
@@ -3020,7 +3040,11 @@ async function executeCombatRound() {
             target.visualEffect = null;
             updateCombatUI();
 
-            if (window.combatState.enemies.every(e => e.hp <= 0)) { await sleep(200); winCombat(); return; }
+            if (target.hp <= 0) {
+                logMsg(`<span style="color:#8b6508;">The ${targetName} falls!</span>`);
+				window.cleanPartyRoster();
+                if (window.combatState.enemies.every(e => e.hp <= 0)) { await sleep(200); winCombat(); return; }
+            }
             await sleep(200);
             continue;
         }
@@ -3185,7 +3209,7 @@ async function executeCombatRound() {
             }
 
             let audioKey = (spell.classReq === 'Bard') ? `b_song_${act.charIndex}` : act.spellId;
-            window.playSpellAudio(act.spellId, isBuff && finalDuration > 0, act.charIndex);
+            window.playSpellAudio(act.spellId, false, act.charIndex);
 
             let casterRank = act.charIndex < 4 ? 1 : 2;
 
@@ -3640,18 +3664,119 @@ async function executeCombatRound() {
     if (window.gameState === 'COMBAT') startCombatRound();
 }
 
+
 window.showGameOver = function() {
+    // 1. Play new Game Over BGM
+    window.playBgm('game_over', true);
+
+    // 2. Check for quicksave availability
+    const hasQuickload = localStorage.getItem('lyrewight_quicksave') !== null;
+    const qBtn = document.getElementById('btn-go-quickload');
+
+    if (qBtn) {
+        qBtn.disabled = !hasQuickload;
+        qBtn.style.opacity = hasQuickload ? '1' : '0.5';
+        qBtn.style.cursor = hasQuickload ? 'pointer' : 'not-allowed';
+    }
+
+    // 🌟 FIX: Display the screen FIRST so the browser can calculate text widths!
     document.getElementById('game-over-screen').style.display = 'flex';
+
+    // 3. Render fallen party members on the gravestones
+    // Isolate actual party members, ignoring blank slots and summoned creatures
+    const fallen = party.filter(p => p.name !== "Empty" && !p.isSummon);
+
+    // Clear any previous names and reset base font sizes
+    for (let i = 0; i < 6; i++) {
+        let grave = document.getElementById(`grave-name-${i}`);
+        if (grave) {
+            grave.innerHTML = '';
+            grave.style.fontSize = (i < 3) ? '1.5rem' : '1.1rem';
+        }
+    }
+
+    // Apply names to the graves (up to 6)
+    fallen.forEach((p, index) => {
+        if (index < 6) {
+            let grave = document.getElementById(`grave-name-${index}`);
+            if (grave) {
+                // 🌟 FIX: Expanded the bounding box significantly to fit within the actual gravestone art
+                let maxWidth = (index < 3) ? 86 : 62; 
+                let fontSize = (index < 3) ? 1.5 : 0.9;
+
+                grave.style.width = maxWidth + 'px';
+                grave.style.fontSize = fontSize + 'rem';
+
+                // We wrap the text in an inline-block span to measure its true width accurately
+                // Replace all spaces with <br> to stack long names neatly
+                const formattedName = p.name.replace(/ /g, "<br>");
+                grave.innerHTML = `<span id="grave-span-${index}" style="display: inline-block; text-align: center; line-height: 1.1;">${formattedName}</span>`;
+
+                let span = document.getElementById(`grave-span-${index}`);
+
+                // 🌟 DYNAMIC FONT SCALING: Shrink if the inner span is wider than our allowed max width
+                if (span) {
+                    while (span.offsetWidth > maxWidth && fontSize > 0.5) {
+                        fontSize -= 0.05;
+                        grave.style.fontSize = fontSize + 'rem';
+                    }
+                }
+            }
+        }
+    });
 };
 
-window.restartGame = function() {
+
+document.getElementById('btn-go-quickload').addEventListener('click', () => {
+    if (localStorage.getItem('lyrewight_quicksave')) {
+        document.getElementById('game-over-screen').style.display = 'none';
+        window.quickLoad();
+    }
+});
+
+document.getElementById('btn-go-load').addEventListener('click', () => {
+    document.getElementById('load-file-input').click();
+});
+
+document.getElementById('btn-go-restart-vaults').addEventListener('click', () => {
+    if (confirm("Are you sure you want to restart from the Vaults? All progress will be lost.")) {
+        window.triggerHardRestart('vaults');
+    }
+});
+
+document.getElementById('btn-go-restart-guild').addEventListener('click', () => {
+    if (confirm("Are you sure you want to restart from the Guild? All progress will be lost.")) {
+        window.triggerHardRestart('guild');
+    }
+});
+
+window.triggerHardRestart = function(mode) {
+    // Preserve Settings and Version Key before wiping
+    let gfx = localStorage.getItem('lyrewight_graphics');
+    let mus = localStorage.getItem('audio_music');
+    let sfx = localStorage.getItem('audio_sfx');
+    let spd = localStorage.getItem('lyrewight_combatSpeed');
+    let ver = localStorage.getItem('lyrewight_version');
+
     localStorage.clear();
+
+    if (gfx !== null) localStorage.setItem('lyrewight_graphics', gfx);
+    if (mus !== null) localStorage.setItem('audio_music', mus);
+    if (sfx !== null) localStorage.setItem('audio_sfx', sfx);
+    if (spd !== null) localStorage.setItem('lyrewight_combatSpeed', spd);
+    if (ver !== null) localStorage.setItem('lyrewight_version', ver);
+
+    // Stage the restart and execute a hard reload to clear memory
+    localStorage.setItem('lyrewight_autostart', mode);
     location.reload();
 };
 
-document.getElementById('btn-restart-game').addEventListener('click', () => {
-    window.restartGame();
-});
+window.restartGame = function() {
+    let ver = localStorage.getItem('lyrewight_version');
+    localStorage.clear();
+    if (ver !== null) localStorage.setItem('lyrewight_version', ver);
+    location.reload();
+};
 
 async function enemyTurn() {
     let aliveEnemies = window.combatState.enemies.filter(e => e.hp > 0);
@@ -3661,8 +3786,16 @@ async function enemyTurn() {
         if (window.gameState !== 'COMBAT') return;
 
         let eName = e.customName || e.data.name;
-        let formattedName = e.customName ? eName : `${window.getArticle(e.data.name)} ${e.data.name}`;
-        let formattedNameLower = e.customName ? eName : `${window.getArticle(e.data.name).toLowerCase()} ${e.data.name}`;
+
+        // 🌟 FIX: Smart Article Capitalization Engine
+        let article = window.getArticle(e.data.name);
+        let baseNameStr = article ? `${article} ${e.data.name}` : e.data.name;
+
+        // formattedName gets a Capitalized first letter for sentence starters
+        let formattedName = e.customName ? eName : baseNameStr.charAt(0).toUpperCase() + baseNameStr.slice(1);
+
+        // formattedNameLower retains the lowercase 'a' or 'an' for mid-sentence usage
+        let formattedNameLower = e.customName ? eName : baseNameStr;
 
         if (!e.ailments) e.ailments = new Array();
 
@@ -3756,17 +3889,20 @@ async function enemyTurn() {
 
         // Targeting Logic
         let validTargets = [];
+        // First pass: Try targeted group
         for(let i = 0; i < 6; i++) {
             if(party[i].hp > 0 && party[i].name !== "Empty") {
                 if (targetGroup === 'FRONT' && i < 4) validTargets.push(party[i]);
                 if (targetGroup === 'BACK' && i >= 4) validTargets.push(party[i]);
             }
         }
-        if (validTargets.length === 0 && targetGroup === 'FRONT') {
-            for(let i = 4; i < 6; i++) if(party[i].hp > 0 && party[i].name !== "Empty") validTargets.push(party[i]);
+        // Fallback: If group empty, grab anyone
+        if (validTargets.length === 0) {
+            for(let i = 0; i < 6; i++) if(party[i].hp > 0 && party[i].name !== "Empty") validTargets.push(party[i]);
         }
 
-        if (validTargets.length === 0) { logMsg("Your entire party has fallen..."); return; }
+        // Final Defeat Check
+        if (window.checkPartyDefeat()) return; 
 
         let totalWeight = 0;
         let weightedTargets = validTargets.map(t => {
@@ -3814,8 +3950,7 @@ async function enemyTurn() {
         if (e.ailments.includes('Blindness') && attackType !== 'MAGIC' && Math.random() < 0.5) {
             logMsg(`<span style="color:#888; font-weight:bold;">The blinded ${eName} attacks the darkness, missing completely!</span>`);
             window.playSfx('melee_miss.ogg');
-            await sleep(600);
-            continue;
+            updateCombatUI(); await sleep(600); continue; 
         }
 
         let tLUK = getStat(target, 'LUK');
@@ -3901,13 +4036,16 @@ async function enemyTurn() {
         target.hp = Math.max(0, target.hp - finalDmg);
         logMsg(`<span class="log-damage">${targetName} takes ${finalDmg} damage!</span>`);
 
+		if (target.hp <= 0 && target.isSummon) {
+			logMsg(`<span style="color:#aa0000; font-weight:bold;">${target.name} has been vanquished and has returned whence it was summoned from!</span>`);
+			window.cleanPartyRoster();
+		}
+
         // 🌟 SFX Hit Selection
         let hitSound = (totalAC > 2) ? 'melee_hit_armor.ogg' : 'melee_hit_flesh.ogg';
         window.playSfx(hitSound);
 
-		if (window.checkPartyDefeat()) return; 
-
-        if (target.ailments.includes('Sleep')) {
+        if (target.hp > 0 && target.ailments.includes('Sleep')) {
             target.ailments = target.ailments.filter(a => a !== 'Sleep');
             logMsg(`<span style="color:#4488ff; font-weight:bold;">The blow wakes ${targetName} up!</span>`);
         }
@@ -3928,11 +4066,14 @@ async function enemyTurn() {
             }
         }
 
+        // 🌟 FIX: Trigger the Visual Effects AND Update the UI *Before* evaluating for Defeat!
         target.visualEffect = 'glow-hit';
         updateCombatUI();
         await sleep(400);
         target.visualEffect = null;
         updateCombatUI();
+
+		if (window.checkPartyDefeat()) return; 
     }
 }
 
@@ -3948,8 +4089,17 @@ window.grantCard = function(enemyName) {
 function winCombat() {
     let enemy = window.combatState.enemies[0];
     let isSingle = window.combatState.enemies.length === 1;
-    let enemyName = isSingle ? (enemy.customName || enemy.data.name) : "the horde";
-    let formattedVictoriousName = isSingle ? enemyName : "the horde";
+
+    // 🌟 FIX: Apply smart article and formatting for Victory message
+    let formattedVictoriousName = "the horde";
+    if (isSingle) {
+        if (enemy.customName) {
+            formattedVictoriousName = enemy.customName;
+        } else {
+            let art = window.getArticle(enemy.data.name);
+            formattedVictoriousName = art ? `${art} ${enemy.data.name}` : enemy.data.name;
+        }
+    }
 
     // 🌟 INTERCEPT: If Lyre-Wight is defeated, trigger ending modal instead of standard victory
     if (window.combatState.enemies.some(e => e.data.name === "The Lyre-Wight")) {
@@ -4316,14 +4466,25 @@ function move(direction) {
 				window.checkZoneEffects();
 			}			
 
-			let spinner = entities.find(e => e.type === 'spinner' && e.x === player.x && e.y === player.y);
-			if (spinner && !window.isSpinProtected()) {
-				let oldDir = player.dir;
-				player.dir = Math.floor(Math.random() * 4); // Spin to a random direction
-				logMsg(`<span style="color:#aa44ff;">The floor spins beneath your feet! You are disoriented.</span>`);
+            // 🌟 TRIGGER: Handle Spinner logic			
+            let spinner = entities.find(e => e.type === 'spinner' && e.x === player.x && e.y === player.y);
+			if (spinner) {
+				// If we haven't seen it yet, reveal it now
+				if (!spinner.isDetected) {
+					logMsg(`<span style="color:#aa44ff;">You stepped on a hidden Spinner!</span>`);
+					spinner.isDetected = true;
+				}
+
+				// Trigger the spin if not protected by the ring
+				if (!window.isSpinProtected()) {
+					player.dir = Math.floor(Math.random() * 4);
+					logMsg(`<span style="color:#aa44ff;">The floor spins beneath your feet! You are disoriented.</span>`);
+				} else {
+					logMsg(`<span style="color:#635725;">Your Ring of Stability holds you firm against the spinner!</span>`);
+				}
 			}
 
-            // 🌟 DETECTION: Detect Traps AND Spinners within 2 tiles (EXCLUDE Darkness, Silence, Anti-Magic)
+			// 🌟 DETECTION: Detect Traps AND Spinners within 2 tiles (EXCLUDE Darkness, Silence, Anti-Magic)
 			entities.filter(e => (e.type === 'trap' || e.type === 'spinner') && !e.isDetected).forEach(ent => {
 				if (Math.hypot(ent.x - player.x, ent.y - player.y) <= 2) {
 					let bestDex = party.reduce((max, p) => Math.max(max, getStat(p, 'DEX')), 0);
@@ -4358,25 +4519,6 @@ function move(direction) {
 
 				// Set to triggered so it doesn't fire again if you walk off and back on
 				trapOnTile.state = 'triggered'; 
-				// Optionally remove it from the map if it's a "one-shot" trap
-				// entities = entities.filter(e => e !== trapOnTile);
-			}
-
-			// 🌟 TRIGGER: Handle Spinner logic			
-			if (spinner) {
-				// If we haven't seen it yet, reveal it now
-				if (!spinner.isDetected) {
-					logMsg(`<span style="color:#aa44ff;">You stepped on a hidden Spinner!</span>`);
-					spinner.isDetected = true;
-				}
-
-				// Trigger the spin if not protected by the ring
-				if (!window.isSpinProtected()) {
-					player.dir = Math.floor(Math.random() * 4);
-					logMsg(`<span style="color:#aa44ff;">The floor spins beneath your feet! You are disoriented.</span>`);
-				} else {
-					logMsg(`<span style="color:#635725;">Your Ring of Stability holds you firm against the spinner!</span>`);
-				}
 			}
 
 			let teleporter = entities.find(e => e.type === 'teleporter' && e.x === player.x && e.y === player.y);
@@ -4954,142 +5096,177 @@ function buildItemSlot(invObj, expectedSlotName, actionData) {
 
 
 /* ================= ITEM DRAG AND DROP ENGINE ================= */
+// Store the source data globally so we can validate it during dragEnter
+window.dragSourceData = null; 
+
 window.handleItemDragStart = function(e) {
-    // 🌟 FIXED: Save the element to a variable immediately!
     let dragTarget = e.currentTarget; 
-    
-    if (dragTarget.classList.contains('empty')) { e.preventDefault(); return; } // Don't drag empty air!
+    if (dragTarget.classList.contains('empty')) { e.preventDefault(); return; }
+
+    // Store metadata globally to use in dragEnter
+    window.dragSourceData = dragTarget.dataset.source;
+
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', dragTarget.dataset.source);
-    
-    // 🌟 FIXED: Use the saved variable inside the timeout
+
     setTimeout(() => dragTarget.classList.add('dragging'), 0);
 };
 
-window.handleItemDragOver = function(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; };
-window.handleItemDragEnter = function(e) { e.currentTarget.classList.add('drag-over'); };
-window.handleItemDragLeave = function(e) { e.currentTarget.classList.remove('drag-over'); };
+window.handleItemDragEnter = function(e) {
+    if (!window.dragSourceData) return;
+
+    let target = e.currentTarget;
+    let sourceStr = window.dragSourceData;
+    let targetStr = target.dataset.source;
+
+    // Default to invalid
+    let isValid = false;
+
+    // Parsing
+    let srcParts = sourceStr.split(':'), tgtParts = targetStr.split(':');
+    let srcType = srcParts[0], srcLoc = srcParts[1]; 
+    let tgtType = tgtParts[0], tgtLoc = tgtParts[1]; 
+
+    let char = party[activeModalCharIndex];
+    let srcObj = srcType === 'inv' ? sharedInventory[parseInt(srcLoc)] : char.equipped[srcLoc];
+
+    if (srcObj) {
+        let itemId = typeof srcObj === 'string' ? srcObj : srcObj.id;
+        let sData = itemDB[itemId];
+
+        // 1. Inventory to Inventory: Always valid
+        if (srcType === 'inv' && tgtType === 'inv') {
+            isValid = true;
+        } 
+        // 2. Inventory to Equipment
+        else if (srcType === 'inv' && tgtType === 'eq') {
+            let targetSlot = tgtLoc.startsWith('Ring') ? 'Ring' : tgtLoc;
+
+            // Validate: Class/Race rules (canEquip), Slot match, and Requirement check
+            let isSlotMatch = (sData.slot === targetSlot);
+            let meetsRequirements = canEquip(char, sData) && (!sData.reqClass || sData.reqClass.includes(char.class));
+
+            if (isSlotMatch && meetsRequirements) {
+                isValid = true;
+            }
+        } 
+        // 3. Equipment to Inventory: Always valid
+        else if (srcType === 'eq' && tgtType === 'inv') {
+            isValid = true;
+        }
+    }
+
+    if (isValid) {
+        target.classList.add('drag-valid');
+    } else {
+        target.classList.add('drag-invalid');
+    }
+};
+
+window.handleItemDragOver = function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+};
+
+window.handleItemDragLeave = function(e) {
+    e.currentTarget.classList.remove('drag-valid');
+    e.currentTarget.classList.remove('drag-invalid');
+};
 
 window.handleItemDragEnd = function(e) {
-    document.querySelectorAll('.item-slot').forEach(el => { el.classList.remove('dragging'); el.classList.remove('drag-over'); });
+    window.dragSourceData = null; // Clear tracking
+    document.querySelectorAll('.item-slot').forEach(el => { 
+        el.classList.remove('dragging'); 
+        el.classList.remove('drag-valid'); 
+        el.classList.remove('drag-invalid'); 
+    });
 };
 
 window.handleItemDrop = function(e) {
     e.preventDefault(); e.stopPropagation();
-    
+
     let sourceStr = e.dataTransfer.getData('text/plain');
     let targetStr = e.currentTarget.dataset.source;
-    document.querySelectorAll('.item-slot').forEach(el => { el.classList.remove('dragging'); el.classList.remove('drag-over'); });
+
+    window.handleItemDragEnd(); // Clean up visual classes
 
     if (!sourceStr || !targetStr || sourceStr === targetStr) return;
 
     let char = party[activeModalCharIndex];
     if (!char) return;
 
-    // Parse the data strings (e.g. "inv:5" or "eq:Weapon")
     let srcParts = sourceStr.split(':'), tgtParts = targetStr.split(':');
     let srcType = srcParts[0], srcLoc = srcParts[1]; 
     let tgtType = tgtParts[0], tgtLoc = tgtParts[1]; 
 
-    // Extract Source Object
     let srcObj = srcType === 'inv' ? sharedInventory[parseInt(srcLoc)] : char.equipped[srcLoc];
     if (!srcObj) return;
     if (typeof srcObj === 'string') srcObj = { id: srcObj, qty: 1 };
 
-    // Extract Target Object
     let tgtObj = tgtType === 'inv' ? sharedInventory[parseInt(tgtLoc)] : char.equipped[tgtLoc];
     if (tgtObj && typeof tgtObj === 'string') tgtObj = { id: tgtObj, qty: 1 };
 
     let sData = itemDB[srcObj.id];
     let tData = tgtObj ? itemDB[tgtObj.id] : null;
 
-    // 🟢 SCENARIO 1: INVENTORY to INVENTORY
+    // --- EXECUTION LOGIC ---
     if (srcType === 'inv' && tgtType === 'inv') {
+        // Swap or Merge
         if (tgtObj && tgtObj.id === srcObj.id && sData.stackable) {
-            // Merge Stacks!
             let space = 10 - tgtObj.qty;
             let move = Math.min(space, srcObj.qty);
             sharedInventory[parseInt(tgtLoc)].qty += move;
             sharedInventory[parseInt(srcLoc)].qty -= move;
             if (sharedInventory[parseInt(srcLoc)].qty <= 0) sharedInventory[parseInt(srcLoc)] = null;
         } else {
-            // Swap Places
             sharedInventory[parseInt(tgtLoc)] = srcObj;
             sharedInventory[parseInt(srcLoc)] = tgtObj;
         }
     }
-    
-    // ⚔️ SCENARIO 2: INVENTORY to EQUIPMENT
     else if (srcType === 'inv' && tgtType === 'eq') {
-        let allowedSlot = tgtLoc.startsWith('Ring') ? 'Ring' : tgtLoc; 
-        if (sData.slot !== allowedSlot) { logMsg(`<span style="color:#aa0000;">Cannot equip ${sData.name} to the ${tgtLoc} slot.</span>`); return; }
-        
-        // 🌟 FIXED: Drag and Drop now strictly obeys race and class rules!
-        if (!canEquip(char, sData)) { logMsg(`<span style="color:#aa0000;">${char.name} cannot equip this type of item.</span>`); return; }
-        if (sData.reqClass && !sData.reqClass.includes(char.class)) { logMsg(`<span style="color:#aa0000;">${char.name}'s class cannot equip this item.</span>`); return; }
+        // Strict Validation Check
+        let targetSlot = tgtLoc.startsWith('Ring') ? 'Ring' : tgtLoc;
+        if (sData.slot !== targetSlot) { logMsg(`<span style="color:#aa0000;">Wrong slot for ${sData.name}.</span>`); return; }
+        if (!canEquip(char, sData) || (sData.reqClass && !sData.reqClass.includes(char.class))) { logMsg(`<span style="color:#aa0000;">${char.name} cannot equip ${sData.name}.</span>`); return; }
 
+        // Ammo Logic
         if (tgtLoc === 'Ammo') {
             if (tgtObj && tgtObj.id === srcObj.id) { char.equipped.Ammo.qty += srcObj.qty; sharedInventory[parseInt(srcLoc)] = null; } 
             else { char.equipped.Ammo = { id: srcObj.id, qty: srcObj.qty }; sharedInventory[parseInt(srcLoc)] = tgtObj; }
         } else {
-            if (srcObj.qty > 1) { // Split the stack!
+            if (srcObj.qty > 1) {
                 char.equipped[tgtLoc] = srcObj.id;
                 sharedInventory[parseInt(srcLoc)].qty -= 1;
                 if (tgtObj) addLootToInventory(tgtObj.id, tgtObj.qty);
-            } else { // Standard equip swap
+            } else {
                 char.equipped[tgtLoc] = srcObj.id;
                 sharedInventory[parseInt(srcLoc)] = tgtObj;
             }
         }
-        renderParty();
     }
-
-    // 🎒 SCENARIO 3: EQUIPMENT to INVENTORY
     else if (srcType === 'eq' && tgtType === 'inv') {
         if (tgtObj) {
-            // Swapping equipped item for an item in inventory
-            // 🌟 FIXED: Added reqClass check so swapped items are fully validated!
+            // Swap check
             if (tData.slot === srcLoc && canEquip(char, tData) && (!tData.reqClass || tData.reqClass.includes(char.class))) {
                 if (srcLoc === 'Ammo') {
                     char.equipped.Ammo = { id: tgtObj.id, qty: tgtObj.qty };
                     sharedInventory[parseInt(tgtLoc)] = srcObj;
                 } else {
-                    if (tgtObj.qty > 1) {
-                        char.equipped[srcLoc] = tgtObj.id;
-                        sharedInventory[parseInt(tgtLoc)].qty -= 1;
-                        addLootToInventory(srcObj.id, srcObj.qty);
-                    } else {
-                        char.equipped[srcLoc] = tgtObj.id;
-                        sharedInventory[parseInt(tgtLoc)] = srcObj;
-                    }
+                    char.equipped[srcLoc] = tgtObj.id;
+                    sharedInventory[parseInt(tgtLoc)] = srcObj;
                 }
-                renderParty();
-            } else if (tgtObj.id === srcObj.id && sData.stackable) {
-                // Merging equipped ammo back into the inventory stack
-                let space = 10 - tgtObj.qty;
-                let move = Math.min(space, srcObj.qty);
-                sharedInventory[parseInt(tgtLoc)].qty += move;
-                if (srcLoc === 'Ammo') {
-                    char.equipped.Ammo.qty -= move;
-                    if (char.equipped.Ammo.qty <= 0) char.equipped.Ammo = null;
-                } else {
-                    if (move > 0) char.equipped[srcLoc] = null;
-                }
-                renderParty();
             } else {
-                logMsg(`<span style="color:#aa0000;">Cannot swap ${sData.name} with ${tData.name}.</span>`);
+                logMsg(`<span style="color:#aa0000;">Cannot swap items.</span>`);
             }
         } else {
-            // Target inventory slot is empty, just unequip it!
             sharedInventory[parseInt(tgtLoc)] = srcObj;
             char.equipped[srcLoc] = null;
-            renderParty();
         }
     }
-
-    // Finally, re-render the modal to show the changes!
     openCharSheet(activeModalCharIndex);
+    renderParty();
 };
+
 
 // Opens the inspector overlay
 window.openItemModal = function(actionData) {
@@ -6771,6 +6948,9 @@ function tickTime() {
         }
     });
 
+    window.cleanPartyRoster();
+    if (window.checkPartyDefeat()) return; // 🌟 INTERCEPT EXPLORATION DOT DEATHS
+
     if (typeof renderParty === 'function') renderParty();
 
     if (window.partyEffects.length === 0) return;
@@ -6794,7 +6974,7 @@ function tickTime() {
 
         // Skip decaying if protected!
         if (effect.type === 'light' && hasPermLight) continue; 
-        
+
 		let bard = party[effect.casterIndex];
 		let hasPermSong = bard && (bard.equipped.Ring1 === 'ring_bard' || bard.equipped.Ring2 === 'ring_bard');
 		if (effect.type === 'song' && hasPermSong) continue; 		
@@ -6807,6 +6987,7 @@ function tickTime() {
     }
     updateEffectsUI();
 }
+
 
 if (typeof update === 'function') { update(); }
 
@@ -7035,12 +7216,12 @@ window.generateRandomParty = function() {
 
     let newParty = [];
     let slots = [
-        { cls: "Paladin", race: null }, // Random Paladin
-        { cls: "Warrior", race: null }, // Random Warrior
-        { cls: "Bard", race: "Vibrant" }, // Vibrant Bard
-        { cls: "Rogue", race: null }, // Random Rogue
-        { cls: "Mage", race: null }, // Random Mage
-        { cls: "Healer", race: null } // Random Healer
+        { cls: "Paladin", race: null }, 
+        { cls: "Warrior", race: null }, 
+        { cls: "Bard", race: "Vibrant" }, 
+        { cls: "Rogue", race: null }, 
+        { cls: "Mage", race: null }, 
+        { cls: "Healer", race: null }
     ];
 
     slots.forEach(slot => {
@@ -7049,7 +7230,8 @@ window.generateRandomParty = function() {
             let possibleRaces = races.filter(r => isAllowed(r, slot.cls));
             race = possibleRaces[Math.floor(Math.random() * possibleRaces.length)];
         }
-        newParty.push(window.generateNewCharacter(race, slot.cls, 1));
+        // 🌟 UPDATED: Uses the DEBUG_START_LEVEL variable instead of hardcoded 1
+        newParty.push(window.generateNewCharacter(race, slot.cls, window.DEBUG_START_LEVEL));
     });
 
     return newParty;
@@ -8232,6 +8414,7 @@ window.executeChestOpen = function(openerIndex, fX, fY, chestIndex) {
             logMsg(`<span style="color:#00aa00; font-style:italic;">${opener.name} detects and carefully disarms a trap on the chest!</span>`);
         } else {
             window.triggerChestTrap(dLvl, openerIndex);
+            if (window.checkPartyDefeat()) return; // 🌟 INTERCEPT LOOT DROP IF KILLED
         }
     }
 
@@ -8260,7 +8443,6 @@ window.executeChestOpen = function(openerIndex, fX, fY, chestIndex) {
     logMsg(txt); 
     if(typeof update === 'function') update();
 };
-
 
 
 // ==========================================
@@ -8323,7 +8505,9 @@ window.triggerChestTrap = function(dLvl, openerIndex) {
     }
 
     logMsg(logStr);
+    window.cleanPartyRoster();
     renderParty();
+    window.checkPartyDefeat();
 };
 
 
@@ -8872,13 +9056,16 @@ window.checkPartyDefeat = function() {
     console.log("Defeat Check triggered. Alive members:", aliveMembers.length);
 
     if (aliveMembers.length === 0) {
-        logMsg("Your entire party has fallen...");
-        window.showGameOver();
+        const gameOverScreen = document.getElementById('game-over-screen');
+        // 🌟 FIX: Idempotent check ensures we don't double-log or double-render
+        if (gameOverScreen && gameOverScreen.style.display !== 'flex') {
+            logMsg("Your entire party has fallen...");
+            window.showGameOver();
+        }
         return true; // Returns true if party is defeated
     }
     return false;
 };
-
 window.executeForgeUnlock = function(openerIndex, ent) {
     let opener = party[openerIndex];
     let isVibrantBard = (opener.race === 'Vibrant' && opener.class === 'Bard');
@@ -8886,7 +9073,9 @@ window.executeForgeUnlock = function(openerIndex, ent) {
     if (!isVibrantBard) {
         logMsg(`<span style="color:#aa0000; font-weight:bold;">${opener.name} attempts to touch the Forge, but the Harmonic energy tears them apart!</span>`);
         opener.hp = 0;
+        window.cleanPartyRoster();
         renderParty();
+        window.checkPartyDefeat();
         return;
     }
 
@@ -8933,7 +9122,6 @@ window.executeForgeUnlock = function(openerIndex, ent) {
 
     if(typeof update === 'function') update();
 };
-
 
 // ==========================================
 // 💾 SAVE / LOAD ENGINE
@@ -9124,164 +9312,12 @@ window.loadGame = async function(file) {
     const reader = new FileReader();
     reader.onload = async (e) => {
         try {
-            let rawData = e.target.result;
-            let saveData;
-
-            if (rawData.startsWith('{')) {
-                saveData = JSON.parse(rawData);
-            } else {
-                let decompressed = LZString.decompressFromUTF16(rawData);
-                if (!decompressed) throw new Error("Decompression failed");
-                saveData = JSON.parse(decompressed);
-            }
-
-            if (!saveData.player || !saveData.currentMapId) {
-                throw new Error("Invalid save file structure.");
-            }
-
-            // 1. Restore core state
-            console.log("Restoring core state...");
-            window.gameState = 'EXPLORE'; 
-            window.combatState.enemies = []; 
-			window.gameTurnCounter = saveData.gameTurnCounter || 0;
-            currentMapId = saveData.currentMapId;
-            player.x = saveData.player.x;
-            player.y = saveData.player.y;
-            player.dir = saveData.player.dir;
-            sharedGold = saveData.sharedGold;
-
-            // 2. Reconstruct arrays
-            console.log("Restoring party and inventory...");
-
-            // --- 🌟 QUEST & INVENTORY MIGRATION ENGINE ---
-            questInventory.length = 0;
-            if (saveData.questInventory) {
-                saveData.questInventory.forEach(q => questInventory.push(q));
-            }
-
-            for (let i = 0; i < 100; i++) {
-                let item = (saveData.sharedInventory && saveData.sharedInventory[i]) ? saveData.sharedInventory[i] : null;
-                if (item) {
-                    if (item.isQuestItem) {
-                        // Prevent duplicate quest items during migration
-                        if (!questInventory.some(q => q.title === item.title && q.part === item.part)) {
-                            questInventory.push(item);
-                        }
-                        item = null; // Free up the slot in sharedInventory
-                    } else {
-                        let id = typeof item === 'string' ? item : item.id;
-                        // Purge items that no longer exist in the game database
-                        if (!itemDB || !itemDB[id]) {
-                            item = null;
-                        }
-                    }
-                }
-                sharedInventory[i] = item;
-            }
-            // ----------------------------------------------
-
-            party.length = 0; 
-            saveData.party.forEach(p => {
-                // 🌟 REPAIR LEGACY SUMMONS MISSING ENEMYDATA
-                if (p.isSummon && !p.enemyData && typeof enemyBestiary !== 'undefined') {
-                    p.enemyData = enemyBestiary.find(e => e.name === p.name) || 
-                                  enemyBestiary.find(e => e.level === p.level && e.hpMax === p.maxHp) ||
-                                  enemyBestiary.find(e => e.level === p.level) ||
-                                  enemyBestiary[0];
-                }
-                party.push(p);
-            });
-
-			// Load Settings
-            if (saveData.settings) {
-                // 🌟 FIX: Pass 'false' to suppress update() until the map is loaded below
-                window.applyGraphicsSetting(saveData.settings.graphics, true, false);
-                localStorage.setItem('audio_music', saveData.settings.music);
-                localStorage.setItem('audio_sfx', saveData.settings.sfx);
-                window.combatSpeedMultiplier = saveData.settings.combatSpeed !== undefined ? saveData.settings.combatSpeed : 1.0;
-                localStorage.setItem('lyrewight_combatSpeed', window.combatSpeedMultiplier);
-
-                 // 🌟 TRIGGER THE RESTORATION
-                if (saveData.settings.fullscreen) {
-                    window.armFullscreenRestoration();
-                }
-
-                // Update UI toggles
-                const musicToggle = document.getElementById('music-toggle');
-                const sfxToggle = document.getElementById('sfx-toggle');
-                const gfxSelect = document.getElementById('graphics-select');
-                const speedSlider = document.getElementById('combat-speed-slider');
-
-                if (musicToggle) musicToggle.checked = saveData.settings.music;
-                if (sfxToggle) sfxToggle.checked = saveData.settings.sfx;
-                if (gfxSelect) gfxSelect.value = saveData.settings.graphics;
-                if (speedSlider) speedSlider.value = 200 - (window.combatSpeedMultiplier * 100);
-            }
-
-            // Restore globals
-            discoveredMaps = saveData.discoveredMaps || {}; 
-            guildRoster = saveData.guildRoster || [];
-
-            // 🌟 REPAIR LEGACY SUMMONS IN BARRACKS
-            guildRoster.forEach(p => {
-                if (p.isSummon && !p.enemyData && typeof enemyBestiary !== 'undefined') {
-                    p.enemyData = enemyBestiary.find(e => e.name === p.name) || 
-                                  enemyBestiary.find(e => e.level === p.level && e.hpMax === p.maxHp) ||
-                                  enemyBestiary.find(e => e.level === p.level) ||
-                                  enemyBestiary[0];
-                }
-            });
-
-            unlockedCards = saveData.unlockedCards || [];
-            localStorage.setItem('unlockedCards', JSON.stringify(unlockedCards));
-
-            window.townGatekeepersDefeated = saveData.townGatekeepersDefeated || [];
-            localStorage.setItem('townGatekeepersDefeated', JSON.stringify(window.townGatekeepersDefeated));
-
-            window.dungeonGuardians = saveData.dungeonGuardians || {};
-            window.partyEffects = saveData.partyEffects || [];
-            window.savedDynamicData = saveData.dynamicData || {};
-            window.lastVisitedTown = saveData.lastVisitedTown || 'barrowtown';
-            window.lastTownSpawn = saveData.lastTownSpawn || { x: 6, y: 10, dir: 0 };
-
-            // 3. Re-initialize maps and engine
-            console.log("Initializing map engine...");
-            await initializeGame(); 
-
-            // 4. RESET MODAL STATE
-            activeModalCharIndex = null;
-            document.getElementById('char-modal').style.display = 'none';
-            document.getElementById('options-modal').style.display = 'none';
-
-            document.getElementById('start-screen').style.display = 'none';
-
-            // 5. Refresh UI components
-            console.log("Refreshing UI components...");
-            renderParty(); 
-            updateEffectsUI(); 
-            window.refreshBanner(); 
-
-            if (typeof update === 'function') {
-                update(); 
-            }
-
-            if (window.currentBgmAudio) window.fadeOutAudio(window.currentBgmAudio, true);
-            if (window.isMusicEnabled() && worldMaps[currentMapId].bgm) {
-                window.playBgm(worldMaps[currentMapId].bgm);
-            }
-
-            // 🌟 SUCCESS MESSAGE
-            if (saveData.settings && saveData.settings.fullscreen) {
-                logMsg("<span style='color:#00aa00; font-weight:bold;'>Game Loaded Successfully. Click anywhere to restore full screen.</span>");
-            } else {
-                logMsg("<span style='color:#00aa00; font-weight:bold;'>Game Loaded Successfully.</span>");
-            }
-            console.log("Load process complete.");
-            if (loadingOverlay) loadingOverlay.style.display = 'none';
-
-        } catch(err) {
-            console.error("CRITICAL LOAD ERROR:", err);
-            alert("Failed to load save file. Check console for details.");
+            // Save the raw text to session storage so we can safely wipe memory and reload!
+            sessionStorage.setItem('lyrewight_auto_loadfile', e.target.result);
+            location.reload();
+        } catch (err) {
+            console.error("Load Game Error:", err);
+            alert("File too large or could not be processed for loading.");
             if (loadingOverlay) loadingOverlay.style.display = 'none';
         }
     };
@@ -9299,18 +9335,42 @@ window.quickLoad = async function() {
     const loadingOverlay = document.getElementById('global-loading-screen');
     if (loadingOverlay) loadingOverlay.style.display = 'flex';
 
-    try {
-        let decompressed = LZString.decompressFromUTF16(compressed);
-        let saveData = JSON.parse(decompressed);
+    // Set a flag to trigger quickload execution upon reload
+    sessionStorage.setItem('lyrewight_auto_quickload', 'true');
+    location.reload();
+};
 
-        window.gameState = 'EXPLORE'; // 🌟 FIX: Force explore mode 
-        window.combatState.enemies = []; // 🌟 FIX: Clear combat state
-		window.gameTurnCounter = saveData.gameTurnCounter || 0; 
+window.executeLoadFromData = async function(rawData, isQuickLoad = false) {
+    const loadingOverlay = document.getElementById('global-loading-screen');
+    if (loadingOverlay) loadingOverlay.style.display = 'flex';
+
+    try {
+        let saveData;
+        if (rawData.startsWith('{')) {
+            saveData = JSON.parse(rawData);
+        } else {
+            let decompressed = LZString.decompressFromUTF16(rawData);
+            if (!decompressed) throw new Error("Decompression failed");
+            saveData = JSON.parse(decompressed);
+        }
+
+        if (!saveData.player || !saveData.currentMapId) {
+            throw new Error("Invalid save file structure.");
+        }
+
+        // 1. Restore core state
+        console.log("Restoring core state...");
+        window.gameState = 'EXPLORE'; 
+        window.combatState.enemies = []; 
+        window.gameTurnCounter = saveData.gameTurnCounter || 0;
         currentMapId = saveData.currentMapId;
         player.x = saveData.player.x;
         player.y = saveData.player.y;
         player.dir = saveData.player.dir;
         sharedGold = saveData.sharedGold;
+
+        // 2. Reconstruct arrays
+        console.log("Restoring party and inventory...");
 
         // --- 🌟 QUEST & INVENTORY MIGRATION ENGINE ---
         questInventory.length = 0;
@@ -9322,6 +9382,7 @@ window.quickLoad = async function() {
             let item = (saveData.sharedInventory && saveData.sharedInventory[i]) ? saveData.sharedInventory[i] : null;
             if (item) {
                 if (item.isQuestItem) {
+                    // Prevent duplicate quest items during migration
                     if (!questInventory.some(q => q.title === item.title && q.part === item.part)) {
                         questInventory.push(item);
                     }
@@ -9336,9 +9397,7 @@ window.quickLoad = async function() {
             }
             sharedInventory[i] = item;
         }
-        // ----------------------------------------------
 
-        // 🌟 BUG FIX: Completely rebuild the array dynamically instead of looping by boot length!
         party.length = 0; 
         saveData.party.forEach(p => {
             // 🌟 REPAIR LEGACY SUMMONS MISSING ENEMYDATA
@@ -9351,14 +9410,19 @@ window.quickLoad = async function() {
             party.push(p);
         });
 
-		// Load Settings
+        // Load Settings
         if (saveData.settings) {
-            window.applyGraphicsSetting(saveData.settings.graphics, true);
+            window.applyGraphicsSetting(saveData.settings.graphics, true, false);
             localStorage.setItem('audio_music', saveData.settings.music);
             localStorage.setItem('audio_sfx', saveData.settings.sfx);
             window.combatSpeedMultiplier = saveData.settings.combatSpeed !== undefined ? saveData.settings.combatSpeed : 1.0;
             localStorage.setItem('lyrewight_combatSpeed', window.combatSpeedMultiplier);
 
+            if (saveData.settings.fullscreen) {
+                window.armFullscreenRestoration();
+            }
+
+            // Update UI toggles
             const musicToggle = document.getElementById('music-toggle');
             const sfxToggle = document.getElementById('sfx-toggle');
             const gfxSelect = document.getElementById('graphics-select');
@@ -9370,9 +9434,10 @@ window.quickLoad = async function() {
             if (speedSlider) speedSlider.value = 200 - (window.combatSpeedMultiplier * 100);
         }
 
+        // Restore globals
+        discoveredMaps = saveData.discoveredMaps || {}; 
         guildRoster = saveData.guildRoster || [];
 
-        // 🌟 REPAIR LEGACY SUMMONS IN BARRACKS
         guildRoster.forEach(p => {
             if (p.isSummon && !p.enemyData && typeof enemyBestiary !== 'undefined') {
                 p.enemyData = enemyBestiary.find(e => e.name === p.name) || 
@@ -9383,21 +9448,60 @@ window.quickLoad = async function() {
         });
 
         unlockedCards = saveData.unlockedCards || [];
+        localStorage.setItem('unlockedCards', JSON.stringify(unlockedCards));
+
         window.townGatekeepersDefeated = saveData.townGatekeepersDefeated || [];
+        localStorage.setItem('townGatekeepersDefeated', JSON.stringify(window.townGatekeepersDefeated));
+
         window.dungeonGuardians = saveData.dungeonGuardians || {};
         window.partyEffects = saveData.partyEffects || [];
-        discoveredMaps = saveData.discoveredMaps || {}; 
         window.savedDynamicData = saveData.dynamicData || {};
+        window.lastVisitedTown = saveData.lastVisitedTown || 'barrowtown';
+        window.lastTownSpawn = saveData.lastTownSpawn || { x: 6, y: 10, dir: 0 };
 
-        await initializeGame();
-        renderParty();
-        updateEffectsUI();
-        window.refreshBanner();
-        logMsg("<span style='color:#00aa00; font-weight:bold;'>Quickloaded successfully (F9).</span>");
+        // 3. Re-initialize maps and engine
+        console.log("Initializing map engine...");
+        await initializeGame(); 
+
+        // 4. RESET MODAL STATE
+        activeModalCharIndex = null;
+        document.getElementById('char-modal').style.display = 'none';
+        document.getElementById('options-modal').style.display = 'none';
+        document.getElementById('game-over-screen').style.display = 'none';
+        document.getElementById('start-screen').style.display = 'none';
+
+        // 5. Refresh UI components
+        console.log("Refreshing UI components...");
+        renderParty(); 
+        updateEffectsUI(); 
+        window.refreshBanner(); 
+
+        if (typeof update === 'function') {
+            update(); 
+        }
+
+        if (window.currentBgmAudio) window.fadeOutAudio(window.currentBgmAudio, true);
+        if (window.isMusicEnabled() && worldMaps[currentMapId].bgm) {
+            window.playBgm(worldMaps[currentMapId].bgm);
+        }
+
+        // 🌟 SUCCESS MESSAGE
+        if (isQuickLoad) {
+            logMsg("<span style='color:#00aa00; font-weight:bold;'>Quickloaded successfully (F9).</span>");
+        } else {
+            if (saveData.settings && saveData.settings.fullscreen) {
+                logMsg("<span style='color:#00aa00; font-weight:bold;'>Game Loaded Successfully. Click anywhere to restore full screen.</span>");
+            } else {
+                logMsg("<span style='color:#00aa00; font-weight:bold;'>Game Loaded Successfully.</span>");
+            }
+        }
+
+        console.log("Load process complete.");
         if (loadingOverlay) loadingOverlay.style.display = 'none';
-    } catch (err) {
-        console.error("Quickload failed", err);
-        logMsg("<span style='color:#aa0000;'>Failed to load quicksave.</span>");
+
+    } catch(err) {
+        console.error("CRITICAL LOAD ERROR:", err);
+        alert("Failed to load save file. Check console for details.");
         if (loadingOverlay) loadingOverlay.style.display = 'none';
     }
 };
@@ -9566,6 +9670,108 @@ window.applyStartingGear = function(startMode) {
 	
 };
 
+window.launchGame = async function(mode) {
+    // 0. Preserve Settings before wipe
+    let gfx = localStorage.getItem('lyrewight_graphics');
+    let mus = localStorage.getItem('audio_music');
+    let sfx = localStorage.getItem('audio_sfx');
+    let spd = localStorage.getItem('lyrewight_combatSpeed');
+    let ver = localStorage.getItem('lyrewight_version');
+
+    // 1. Reset state
+    localStorage.clear();
+
+    if (gfx !== null) localStorage.setItem('lyrewight_graphics', gfx);
+    if (mus !== null) localStorage.setItem('audio_music', mus);
+    if (sfx !== null) localStorage.setItem('audio_sfx', sfx);
+    if (spd !== null) localStorage.setItem('lyrewight_combatSpeed', spd);
+    if (ver !== null) localStorage.setItem('lyrewight_version', ver);
+
+    unlockedCards = [];
+    localStorage.setItem('unlockedCards', JSON.stringify(unlockedCards));
+    window.townGatekeepersDefeated = [];
+    localStorage.setItem('townGatekeepersDefeated', JSON.stringify(window.townGatekeepersDefeated));
+    window.dungeonGuardians = {};
+
+    // 🌟 FULL HARD RESET OF IN-MEMORY VARIABLES
+    window.gameState = 'EXPLORE';
+    window.combatState.enemies = [];
+    window.partyEffects = [];
+    window.savedDynamicData = {};
+    discoveredMaps = {};
+    guildRoster = [];
+    window.gameTurnCounter = 0;
+    window.isAnimating = false;
+
+    Object.keys(window.activeSpellAudios).forEach(spellId => {
+        window.fadeOutAudio(window.activeSpellAudios[spellId]);
+        delete window.activeSpellAudios[spellId];
+    });
+
+    const logBox = document.getElementById('message-log');
+    if (logBox) logBox.innerHTML = '';
+
+    // 2. Prepare UI
+    document.getElementById('game-over-screen').style.display = 'none';
+    document.getElementById('start-screen').style.display = 'none';
+    const loadingOverlay = document.getElementById('global-loading-screen');
+    if (loadingOverlay) loadingOverlay.style.display = 'flex';
+
+    // 3. Setup Gear and Party
+    window.applyStartingGear(mode);
+    party.length = 0;
+    questInventory.length = 0; // 🌟 FIX: Also clear quest inventory!
+
+    if (mode === 'guild') {
+        currentMapId = "barrowtown";
+        player.x = 19; player.y = 11; player.dir = 1;
+        sharedGold = 1000;
+    } else {
+        // 🌟 DEFAULT TO VAULTS (FIXED: Safely mutating globals without shadowing them)
+        currentMapId = "vaults_1";
+        player.x = 7; 
+        player.y = 19; 
+        player.dir = 0;
+		
+		//currentMapId = "white_palace_5";
+        //player.x = 23; 
+        //player.y = 29; 
+        //player.dir = 0;
+
+        let newParty = window.generateRandomParty();
+        newParty.forEach(p => party.push(p));
+    }
+
+    window.cleanPartyRoster(); 
+    recalculatePartyStats(); 
+
+    // 4. Initialize Engine
+    try {
+        await initializeGame();
+
+        if (mode === 'guild') {
+            let guildEnt = entities.find(e => e.type === 'shop' && e.shopType === 'guild_hall');
+            if (guildEnt) window.openShop(guildEnt);
+        }
+
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        if (window.isMusicEnabled() && worldMaps[currentMapId].bgm) window.playBgm(worldMaps[currentMapId].bgm);
+
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
+    } catch (err) {
+        console.error("Failed to launch game:", err);
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
+
+        // Error handling: reset the UI
+        const btnStart = document.getElementById('btn-start-game');
+        if (btnStart) { btnStart.disabled = false; btnStart.innerText = "Start at Vaults"; }
+        const btnGuild = document.getElementById('btn-start-guild');
+        if (btnGuild) { btnGuild.disabled = false; btnGuild.innerText = "Start at Guild"; btnGuild.style.display = 'block'; }
+        document.getElementById('start-screen').style.display = 'flex';
+    }
+};
+
+
 window.playIntroSequence = async function(startMode = 'vaults') {
     window.gameStartMode = startMode;
     const introScreen = document.getElementById('intro-screen');
@@ -9576,223 +9782,75 @@ window.playIntroSequence = async function(startMode = 'vaults') {
 
     introScreen.style.display = 'flex';
 
-    // Play intro music (non-looping)
     window.playBgm('theme_intro', false); 
 
     const introSleep = ms => new Promise(r => setTimeout(r, ms));
 
     const slides = [
-        {
-            text: [
-                "The world was sung into existence.", 
-				"Every mountain, river, and soul vibrates with the primal melody of Creation.",
-                "Or at least, it did."
-            ],
-            image: "intro_1.webp",
-            duration: 14000
-        },
-        {
-            text: [
-				"For centuries, silence has been creeping from the edges of the map.",
-				"It is not the silence of peace, but the silence of the Lyre-Wight."
-			],
-            image: "intro_2.webp",
-            duration: 19000
-        },
-        {
-            text: [
-				"Once a virtuoso of unparalleled grace, she fell into the abyss between notes...", 
-				"...and emerged as an abomination of bone and bronze.",
-				"Her voice a razor that shreds the soul and unravels the fabric of reality."
-			],
-            image: "intro_3.webp",
-            duration: 18000
-        },
-        {
-            text: [
-			"Her song is nearing its Final Note.", 
-			"When she sings it, the world will cease to vibrate...",
-			"It will simply... stop."
-			],
-            image: "intro_4.webp",
-            duration: 17000
-        },
-        {
-            text: [
-			"The cities have fallen into isolation.", 
-			"Their gates barred by horrors that serve her symphony.", 
-			"The Wildlands are overrun with villains, beasts and monsters.",
-			"The citizens of the realm are disappearing."
-			],
-            image: "intro_5.webp",
-            duration: 25000
-        },
-        {
-            text: [
-			"But there is a glimmer of hope...", 
-			"The Vibrants — the living constructs of resonant bronze — have reappeared.", 
-			"Their very existence a counter-frequency to the Lyre-Wight’s rot."
-			],
-            image: "intro_6.webp",
-            duration: 20000
-        },
-        {
-            text: ["A party of heroes has assembled.", 
-			"The Bard's instruments are tuned.",
-			"The world’s last song is about to begin."
-			],
-            image: "intro_7.webp", 
-            duration: 12000
-        }
+        { text: ["The world was sung into existence.", "Every mountain, river, and soul vibrates with the primal melody of Creation.", "Or at least, it did."], image: "intro_1.webp", duration: 14000 },
+        { text: ["For centuries, silence has been creeping from the edges of the map.", "It is not the silence of peace, but the silence of the Lyre-Wight."], image: "intro_2.webp", duration: 19000 },
+        { text: ["Once a virtuoso of unparalleled grace, she fell into the abyss between notes...", "...and emerged as an abomination of bone and bronze.", "Her voice a razor that shreds the soul and unravels the fabric of reality."], image: "intro_3.webp", duration: 18000 },
+        { text: ["Her song is nearing its Final Note.", "When she sings it, the world will cease to vibrate...", "It will simply... stop."], image: "intro_4.webp", duration: 17000 },
+        { text: ["The cities have fallen into isolation.", "Their gates barred by horrors that serve her symphony.", "The Wildlands are overrun with villains, beasts and monsters.", "The citizens of the realm are disappearing."], image: "intro_5.webp", duration: 25000 },
+        { text: ["But there is a glimmer of hope...", "The Vibrants — the living constructs of resonant bronze — have reappeared.", "Their very existence a counter-frequency to the Lyre-Wight’s rot."], image: "intro_6.webp", duration: 20000 },
+        { text: ["A party of heroes has assembled.", "The Bard's instruments are tuned.", "The world’s last song is about to begin."], image: "intro_7.webp", duration: 12000 }
     ];
 
     let isStarted = false;
 
     const finishIntro = async (e) => {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
+        if (e) { e.preventDefault(); e.stopPropagation(); }
         if (isStarted) return;
         isStarted = true;
-
         window.fadeOutBgm();
 
-        // 🌟 CHANGE: Do not hide introScreen immediately. Show Loading text!
+        // Hide the skip button
         const btnSkip = document.getElementById('btn-skip-intro');
         if (btnSkip) btnSkip.style.display = 'none';
 
-        const introBgContainer = document.getElementById('intro-bg-container');
-        if (introBgContainer) introBgContainer.style.opacity = 0; 
+        // Trigger the new consolidated launch function
+        await window.launchGame(window.gameStartMode);
 
-        const introText = document.getElementById('intro-text');
-        if (introText) {
-            introText.innerHTML = "Loading Realm...";
-            introText.style.opacity = 1;
-        }
-
-        // 🌟 RESET ALL PROGRESS DATA ON NEW GAME START
-        unlockedCards = [];
-        localStorage.setItem('unlockedCards', JSON.stringify(unlockedCards));
-        window.townGatekeepersDefeated = [];
-        localStorage.setItem('townGatekeepersDefeated', JSON.stringify(window.townGatekeepersDefeated));
-        window.dungeonGuardians = {};   
-        window.applyStartingGear(window.gameStartMode);
-
-        // 🌟 FIX: Populate the global party array depending on the start mode
-        party.length = 0; // Clear it out completely
-
-        if (window.gameStartMode === 'guild') {
-            currentMapId = "barrowtown";
-            player.x = 19; player.y = 11; player.dir = 1;
-            sharedGold = 1000;
-        } else {
-            // Generate full party for vaults start and commit it to the global scope
-            let newParty = window.generateRandomParty();
-            newParty.forEach(p => party.push(p));
-        }
-
-        window.cleanPartyRoster(); // Pad with Empty slots if needed
-        recalculatePartyStats(); // Ensure HP/MP correctly scales based on the now-populated array
-
-        try {
-            await initializeGame();
-
-            // 🌟 NEW: If Guild start, auto-open the Guild Hall menu!
-            if (window.gameStartMode === 'guild') {
-                let guildEnt = entities.find(e => e.type === 'shop' && e.shopType === 'guild_hall');
-                if (guildEnt) {
-                    window.openShop(guildEnt);
-                }
-            }
-
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-            if (window.isMusicEnabled() && worldMaps[currentMapId].bgm) {
-                window.playBgm(worldMaps[currentMapId].bgm);
-            }
-
-            // 🌟 FINALLY hide the intro screen
-            const introScreen = document.getElementById('intro-screen');
-            if (introScreen) introScreen.style.display = 'none';
-        } catch (err) {
-            console.error("Failed to start game:", err);
-            const btnStart = document.getElementById('btn-start-game');
-            if (btnStart) {
-                btnStart.disabled = false;
-                btnStart.innerText = "Start at Vaults";
-            }
-            const btnGuild = document.getElementById('btn-start-guild');
-            if (btnGuild) {
-                btnGuild.disabled = false;
-                btnGuild.innerText = "Start at Guild";
-                btnGuild.style.display = 'block';
-            }
-            document.getElementById('intro-screen').style.display = 'none';
-            document.getElementById('start-screen').style.display = 'flex';
-        }
+        // Hide the intro screen
+        const introScreen = document.getElementById('intro-screen');
+        if (introScreen) introScreen.style.display = 'none';
     };
-
 
     btnSkip.onclick = finishIntro;
-    introScreen.onclick = (e) => {
-        // Allow clicking the final button, but treat clicks outside it as "skip" 
-        // only if the button hasn't been added yet.
-        if (isStarted) return;
-    };
-
-    // Small delay before starting
+    introScreen.onclick = (e) => { if (isStarted) return; };
     await introSleep(1000);
 
     for (let i = 0; i < slides.length; i++) {
         if (isStarted) break;
         const slide = slides[i];
         const textSegments = Array.isArray(slide.text) ? slide.text : [slide.text];
-
         introBg.style.backgroundImage = `url('assets/${slide.image}?v=${GAME_VERSION}')`;
         introBg.classList.remove('intro-image-anim');
         void introBg.offsetWidth; 
         introBg.classList.add('intro-image-anim');
         introBgContainer.style.opacity = 1;
-
         let segmentDuration = (slide.duration - 1500) / textSegments.length;
-
         for (let t = 0; t < textSegments.length; t++) {
             introText.innerHTML = textSegments[t];
             introText.style.opacity = 1;
-
             await introSleep(segmentDuration);
             if (isStarted) break;
-
-            if (t < textSegments.length - 1) {
-                introText.style.opacity = 0;
-                await introSleep(300);
-            }
+            if (t < textSegments.length - 1) { introText.style.opacity = 0; await introSleep(300); }
         }
-
-        if (!isStarted) {
-            introText.style.opacity = 0;
-            await introSleep(300);
-        }
+        if (!isStarted) { introText.style.opacity = 0; await introSleep(300); }
     }
-
     if (!isStarted) {
-        // Visual Sequence finished. Keep final image visible.
         btnSkip.style.display = 'none';
         introText.innerText = ""; 
-
         const btnStartGame = document.createElement('button');
         btnStartGame.innerText = "Start Curse of the Lyre-Wight";
         btnStartGame.style.cssText = "width: 400px; height: 60px; background: #44aa44; color: #fff; border: 4px solid #006600; font-weight: bold; cursor: pointer; font-size: 1.2rem; z-index: 5;";
-
         introScreen.appendChild(btnStartGame);
-
-        // Listen for end of audio OR user button click
-        if (window.currentBgmAudio) {
-            window.currentBgmAudio.onended = finishIntro;
-        }
+        if (window.currentBgmAudio) window.currentBgmAudio.onended = finishIntro;
         btnStartGame.onclick = finishIntro;
     }
 };
+
 
 window.initializeGameListeners = function() {
     document.addEventListener('click', function autoFsHandler() {
@@ -9964,7 +10022,25 @@ window.initializeGameListeners = function() {
 };
 
 
-// Initialize listeners immediately
 window.initializeGameListeners();
+
+// 🌟 AUTOSTART / AUTOLOAD ENGINE
+let autostart = localStorage.getItem('lyrewight_autostart');
+let autoquickload = sessionStorage.getItem('lyrewight_auto_quickload');
+let autoloadfile = sessionStorage.getItem('lyrewight_auto_loadfile');
+
+if (autoquickload) {
+    sessionStorage.removeItem('lyrewight_auto_quickload');
+    let compressed = localStorage.getItem('lyrewight_quicksave');
+    if (compressed) {
+        window.executeLoadFromData(compressed, true);
+    }
+} else if (autoloadfile) {
+    sessionStorage.removeItem('lyrewight_auto_loadfile');
+    window.executeLoadFromData(autoloadfile, false);
+} else if (autostart) {
+    localStorage.removeItem('lyrewight_autostart');
+    window.launchGame(autostart);
+}
 
 
