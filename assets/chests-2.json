@@ -1,0 +1,141 @@
+{"frames": [
+
+{
+	"filename": "fane_chest1.webp",
+	"frame": {"x":1451,"y":840,"w":470,"h":458},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":20,"y":41,"w":470,"h":458},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_chest0.webp",
+	"frame": {"x":1,"y":385,"w":478,"h":442},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":17,"y":40,"w":478,"h":442},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_chest2.webp",
+	"frame": {"x":964,"y":394,"w":480,"h":444},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":16,"y":39,"w":480,"h":444},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_chest3.webp",
+	"frame": {"x":1446,"y":394,"w":481,"h":444},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":15,"y":39,"w":481,"h":444},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_chest8.webp",
+	"frame": {"x":481,"y":394,"w":481,"h":443},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":16,"y":40,"w":481,"h":443},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_chest0.webp",
+	"frame": {"x":1423,"y":1300,"w":488,"h":475},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":10,"y":19,"w":488,"h":475},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_chest5.webp",
+	"frame": {"x":439,"y":1298,"w":488,"h":474},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":11,"y":20,"w":488,"h":474},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "green_chest6.webp",
+	"frame": {"x":929,"y":1299,"w":492,"h":474},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":11,"y":20,"w":492,"h":474},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "keep_chest0.webp",
+	"frame": {"x":1,"y":1288,"w":436,"h":477},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":37,"y":16,"w":436,"h":477},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_chest6.webp",
+	"frame": {"x":475,"y":839,"w":485,"h":457},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":13,"y":36,"w":485,"h":457},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_chest7.webp",
+	"frame": {"x":962,"y":840,"w":487,"h":457},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":12,"y":36,"w":487,"h":457},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "manor_chest7.webp",
+	"frame": {"x":437,"y":1,"w":436,"h":382},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":38,"y":66,"w":436,"h":382},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "manor_chest8.webp",
+	"frame": {"x":1,"y":1,"w":434,"h":381},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":39,"y":65,"w":434,"h":381},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "reach_chest1.webp",
+	"frame": {"x":875,"y":1,"w":460,"h":391},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":26,"y":65,"w":460,"h":391},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "reach_chest4.webp",
+	"frame": {"x":1337,"y":1,"w":460,"h":391},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":26,"y":64,"w":460,"h":391},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "wooden_chest8.webp",
+	"frame": {"x":1,"y":829,"w":472,"h":457},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":21,"y":27,"w":472,"h":457},
+	"sourceSize": {"w":512,"h":512}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "chests-2.webp",
+	"format": "RGBA8888",
+	"size": {"w":1928,"h":1776},
+	"scale": "1",
+	"related_multi_packs": [ "chests-0.json", "chests-1.json", "chests-3.json", "chests-4.json", "chests-5.json", "chests-6.json", "chests-7.json" ],
+	"smartupdate": "$TexturePacker:SmartUpdate:bf37741ab0e53e3f86ac99dc031cc888:16f81071fdd9fd4f19507446818d14bb:9b24109940334bf7779dd39596c0fb23$"
+}
+}

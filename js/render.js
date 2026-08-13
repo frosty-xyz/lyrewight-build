@@ -211,7 +211,7 @@ window.preloadDungeonAssets = function(wallName, onReady) {
 
 const townFloorTextures = [];
 const transCanvases = {};
-const chestCanvases = []; 
+const chestCanvases = {}; 
 const doorCanvases = {}; 
 const enemyCanvases = {}; 
 const townWallTextures = {}; 
@@ -388,22 +388,6 @@ for (let i = 0; i < 10; i++) {
     wfImg.onerror = window.onAssetLoaded;
     wfImg.src = `assets/wild-floor-type-a${i}.webp?v=` + GAME_VERSION;
     wildFloorTextures.push(wfImg);
-
-    totalAssetsToLoad++;
-    let chImg = new Image();
-    chImg.onload = () => {
-        let c = document.createElement('canvas');
-        c.width = chImg.width;
-        c.height = chImg.height;
-        c.getContext('2d').drawImage(chImg, 0, 0);
-        chestCanvases[i] = c;
-        window.onAssetLoaded();
-    };
-    chImg.onerror = () => {
-        chestCanvases[i] = document.createElement('canvas');
-        window.onAssetLoaded();
-    };
-    chImg.src = `assets/wooden_chest${i}.webp?v=` + GAME_VERSION;
 }
 
 function getDoorAsset(mX, mY, typeStr) {
@@ -767,6 +751,26 @@ function getDoor(xA, yA, xB, yB) {
         }
     }
     return null;
+}
+
+function getChestTexture(mX, mY) {
+    let typeKey = (typeof worldMaps !== 'undefined' && worldMaps[currentMapId] && worldMaps[currentMapId].doorType) ? worldMaps[currentMapId].doorType : 'wooden';
+    if (!chestCanvases[typeKey]) chestCanvases[typeKey] = [];
+
+    let idx = getHashIdx(mX, mY, 211, 223);
+
+    if (!chestCanvases[typeKey][idx]) {
+        let filename = `${typeKey}_chest${idx}.webp`;
+        let sprite = window.getChestAtlasSprite(filename);
+        let cTex = window.createCanvasFromSprite(sprite);
+
+        if (!cTex) {
+            cTex = document.createElement('canvas');
+            cTex.width = 64; cTex.height = 64;
+        }
+        chestCanvases[typeKey][idx] = cTex;
+    }
+    return chestCanvases[typeKey][idx];
 }
 
 /* ================= FIELD OF VISION ================= */

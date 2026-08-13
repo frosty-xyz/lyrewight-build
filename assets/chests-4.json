@@ -1,0 +1,141 @@
+{"frames": [
+
+{
+	"filename": "fane_chest8.webp",
+	"frame": {"x":973,"y":491,"w":470,"h":459},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":20,"y":40,"w":470,"h":459},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_chest5.webp",
+	"frame": {"x":498,"y":952,"w":477,"h":446},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":18,"y":37,"w":477,"h":446},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "gloom_chest9.webp",
+	"frame": {"x":1445,"y":923,"w":480,"h":446},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":16,"y":37,"w":480,"h":446},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "maw_chest1.webp",
+	"frame": {"x":1001,"y":1,"w":493,"h":488},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":9,"y":2,"w":493,"h":488},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "maw_chest2.webp",
+	"frame": {"x":504,"y":1,"w":495,"h":488},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":7,"y":3,"w":495,"h":488},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "maw_chest3.webp",
+	"frame": {"x":1,"y":490,"w":495,"h":488},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":7,"y":3,"w":495,"h":488},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "maw_chest9.webp",
+	"frame": {"x":1,"y":1,"w":501,"h":487},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":3,"y":3,"w":501,"h":487},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "palace_chest7.webp",
+	"frame": {"x":977,"y":952,"w":461,"h":448},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":26,"y":34,"w":461,"h":448},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "palace_chest8.webp",
+	"frame": {"x":1440,"y":1371,"w":464,"h":445},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":24,"y":37,"w":464,"h":445},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "reach_chest2.webp",
+	"frame": {"x":1,"y":980,"w":463,"h":397},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":25,"y":55,"w":463,"h":397},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "reach_chest7.webp",
+	"frame": {"x":1,"y":1379,"w":462,"h":397},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":25,"y":59,"w":462,"h":397},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "reach_chest8.webp",
+	"frame": {"x":928,"y":1402,"w":463,"h":395},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":25,"y":59,"w":463,"h":395},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "reach_chest9.webp",
+	"frame": {"x":465,"y":1400,"w":461,"h":397},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":25,"y":59,"w":461,"h":397},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "wooden_chest1.webp",
+	"frame": {"x":1496,"y":462,"w":473,"h":459},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":20,"y":26,"w":473,"h":459},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "wooden_chest2.webp",
+	"frame": {"x":1496,"y":1,"w":475,"h":459},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":19,"y":26,"w":475,"h":459},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "wooden_chest5.webp",
+	"frame": {"x":498,"y":491,"w":473,"h":459},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":20,"y":27,"w":473,"h":459},
+	"sourceSize": {"w":512,"h":512}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "chests-4.webp",
+	"format": "RGBA8888",
+	"size": {"w":1972,"h":1817},
+	"scale": "1",
+	"related_multi_packs": [ "chests-0.json", "chests-1.json", "chests-2.json", "chests-3.json", "chests-5.json", "chests-6.json", "chests-7.json" ],
+	"smartupdate": "$TexturePacker:SmartUpdate:bf37741ab0e53e3f86ac99dc031cc888:16f81071fdd9fd4f19507446818d14bb:9b24109940334bf7779dd39596c0fb23$"
+}
+}

@@ -1,0 +1,109 @@
+{"frames": [
+
+{
+	"filename": "bronze_chest5.webp",
+	"frame": {"x":502,"y":1,"w":466,"h":439},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":23,"y":44,"w":466,"h":439},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "bronze_chest6.webp",
+	"frame": {"x":970,"y":1,"w":464,"h":439},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":25,"y":44,"w":464,"h":439},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "bronze_chest9.webp",
+	"frame": {"x":1436,"y":1,"w":466,"h":439},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":23,"y":44,"w":466,"h":439},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "galleries_chest7.webp",
+	"frame": {"x":1,"y":1,"w":499,"h":438},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":6,"y":38,"w":499,"h":438},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "keep_chest2.webp",
+	"frame": {"x":1,"y":897,"w":434,"h":469},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":38,"y":25,"w":434,"h":469},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "keep_chest5.webp",
+	"frame": {"x":437,"y":898,"w":432,"h":469},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":39,"y":24,"w":432,"h":469},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "keep_chest8.webp",
+	"frame": {"x":871,"y":899,"w":437,"h":470},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":37,"y":23,"w":437,"h":470},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "keep_chest9.webp",
+	"frame": {"x":1310,"y":899,"w":435,"h":470},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":37,"y":23,"w":435,"h":470},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_chest1.webp",
+	"frame": {"x":948,"y":442,"w":485,"h":455},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":13,"y":38,"w":485,"h":455},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_chest3.webp",
+	"frame": {"x":1,"y":441,"w":483,"h":454},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":14,"y":36,"w":483,"h":454},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "lair_chest8.webp",
+	"frame": {"x":1435,"y":442,"w":487,"h":455},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":12,"y":37,"w":487,"h":455},
+	"sourceSize": {"w":512,"h":512}
+},
+{
+	"filename": "palace_chest1.webp",
+	"frame": {"x":486,"y":442,"w":460,"h":454},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":26,"y":32,"w":460,"h":454},
+	"sourceSize": {"w":512,"h":512}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "chests-7.webp",
+	"format": "RGBA8888",
+	"size": {"w":1923,"h":1370},
+	"scale": "1",
+	"related_multi_packs": [ "chests-0.json", "chests-1.json", "chests-2.json", "chests-3.json", "chests-4.json", "chests-5.json", "chests-6.json" ],
+	"smartupdate": "$TexturePacker:SmartUpdate:bf37741ab0e53e3f86ac99dc031cc888:16f81071fdd9fd4f19507446818d14bb:9b24109940334bf7779dd39596c0fb23$"
+}
+}

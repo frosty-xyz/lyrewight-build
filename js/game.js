@@ -97,7 +97,10 @@ window.getSpriteDataUrl = function(filename) {
     // 6. Check Door Atlas (if not found)
     if (!sprite) sprite = window.getDoorAtlasSprite(filename);
 
-    // 7. If sprite isn't in any atlas, return the standard URL safely formatted
+    // 7. Check Chest Atlas (if not found)
+    if (!sprite) sprite = window.getChestAtlasSprite(filename);
+
+    // 8. If sprite isn't in any atlas, return the standard URL safely formatted
     if (!sprite || !sprite.image) {
         let path = filename;
         if (!path.startsWith('assets/') && !path.startsWith('data:')) {
@@ -109,11 +112,12 @@ window.getSpriteDataUrl = function(filename) {
         return path;
     }
 
-    // 8. Create the DataURL from the atlas
+    // 9. Create the DataURL from the atlas
     const c = window.createCanvasFromSprite(sprite);
     if (!c) return "";
     return c.toDataURL();
 };
+
 
 window.loadBestiaryAtlases = async function() {
     const totalPacks = 8;
@@ -402,6 +406,55 @@ window.getDoorAtlasSprite = function(filename) {
     return null;
 };
 
+window.chestTextureAtlas = {};
+window.chestTextureAtlasImages = {};
+
+window.loadChestAtlases = async function() {
+    const totalPacks = 8;
+    let promises = [];
+    for (let i = 0; i < totalPacks; i++) {
+        promises.push((async () => {
+            let packName = `chests-${i}`;
+            try {
+                const res = await fetch(`assets/${packName}.json?v=${GAME_VERSION}`);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                let img = new Image();
+                img.src = `assets/${data.meta.image}?v=${GAME_VERSION}`;
+                window.chestTextureAtlasImages[data.meta.image] = img;
+
+                await new Promise(resolve => {
+                    if (img.complete) resolve();
+                    else { img.onload = resolve; img.onerror = resolve; }
+                });
+
+                data.frames.forEach(f => {
+                    window.chestTextureAtlas[f.filename] = { 
+                        image: img, 
+                        frame: f.frame,
+                        trimmed: f.trimmed,
+                        spriteSourceSize: f.spriteSourceSize,
+                        sourceSize: f.sourceSize
+                    };
+                });
+            } catch(e) { console.warn(`Failed to load chest atlas pack: ${packName}`, e); }
+        })());
+    }
+    await Promise.all(promises);
+    console.log("Chest Atlas System Loaded.");
+};
+
+window.getChestAtlasSprite = function(filename) {
+    if (window.chestTextureAtlas[filename]) return window.chestTextureAtlas[filename];
+    let baseName = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
+    for (let key in window.chestTextureAtlas) {
+        let keyBase = key.includes('.') ? key.substring(0, key.lastIndexOf('.')) : key;
+        if (keyBase === baseName) return window.chestTextureAtlas[key];
+    }
+    return null;
+};
+
 
 window.atlasesLoaded = false;
 window.preloadAllAtlasesPromise = (async function() {
@@ -416,7 +469,8 @@ window.preloadAllAtlasesPromise = (async function() {
         window.loadSpellAtlases(),
         window.loadDungeonAtlases(),
         window.loadCityAtlases(),
-        window.loadDoorAtlases()
+        window.loadDoorAtlases(),
+        window.loadChestAtlases()
     ]);
 
     window.atlasesLoaded = true;
@@ -4407,7 +4461,12 @@ function move(direction) {
         return; 
     }
     else if (boundaryDoor && boundaryDoor.state === 'closed') { logMsg("The door is closed. You must open it first."); return; } 
-    else if (chestBlocks) { logMsg(direction > 0 ? "A heavy wooden chest blocks your path." : "You bump into a chest behind you."); return; }
+    else if (chestBlocks) {         
+        let customChestText = worldMaps[currentMapId] && worldMaps[currentMapId].chestText;
+        let frontMsg = customChestText ? customChestText : "A heavy wooden chest blocks your path.";
+        logMsg(direction > 0 ? frontMsg : "You bump into a chest behind you."); 
+        return; 
+    }
     else if (enemyEntity) { 
         window.preCombatPos = { x: player.x, y: player.y }; // 🌟 Take a snapshot of the safe tile!
         player.x = nX; player.y = nY; 
@@ -4438,13 +4497,13 @@ function move(direction) {
         const handleArrival = () => {
             player.x = nX; player.y = nY;
 
-			let scriptedEnt = entities.find(e => e.type === 'scripted_encounter' && e.x === player.x && e.y === player.y);
-			if (scriptedEnt) {
-				window.tryTriggerScriptedEncounter(scriptedEnt);
-				return; // Stop move processing
-			}
+            let scriptedEnt = entities.find(e => e.type === 'scripted_encounter' && e.x === player.x && e.y === player.y);
+            if (scriptedEnt) {
+                window.tryTriggerScriptedEncounter(scriptedEnt);
+                return; // Stop move processing
+            }
 
-			 window.checkZoneEffects();
+             window.checkZoneEffects();
 
             // 🌟 NEW: Darkness Fizzle Logic
             if (window.isDark(player.x, player.y)) {
@@ -4462,71 +4521,71 @@ function move(direction) {
                 logMsg("Darkness!");
             }
 
-			if (window.isAntiMagic(player.x, player.y)) {
-				window.checkZoneEffects();
-			}			
+            if (window.isAntiMagic(player.x, player.y)) {
+                window.checkZoneEffects();
+            }			
 
             // 🌟 TRIGGER: Handle Spinner logic			
             let spinner = entities.find(e => e.type === 'spinner' && e.x === player.x && e.y === player.y);
-			if (spinner) {
-				// If we haven't seen it yet, reveal it now
-				if (!spinner.isDetected) {
-					logMsg(`<span style="color:#aa44ff;">You stepped on a hidden Spinner!</span>`);
-					spinner.isDetected = true;
-				}
+            if (spinner) {
+                // If we haven't seen it yet, reveal it now
+                if (!spinner.isDetected) {
+                    logMsg(`<span style="color:#aa44ff;">You stepped on a hidden Spinner!</span>`);
+                    spinner.isDetected = true;
+                }
 
-				// Trigger the spin if not protected by the ring
-				if (!window.isSpinProtected()) {
-					player.dir = Math.floor(Math.random() * 4);
-					logMsg(`<span style="color:#aa44ff;">The floor spins beneath your feet! You are disoriented.</span>`);
-				} else {
-					logMsg(`<span style="color:#635725;">Your Ring of Stability holds you firm against the spinner!</span>`);
-				}
-			}
+                // Trigger the spin if not protected by the ring
+                if (!window.isSpinProtected()) {
+                    player.dir = Math.floor(Math.random() * 4);
+                    logMsg(`<span style="color:#aa44ff;">The floor spins beneath your feet! You are disoriented.</span>`);
+                } else {
+                    logMsg(`<span style="color:#635725;">Your Ring of Stability holds you firm against the spinner!</span>`);
+                }
+            }
 
-			// 🌟 DETECTION: Detect Traps AND Spinners within 2 tiles (EXCLUDE Darkness, Silence, Anti-Magic)
-			entities.filter(e => (e.type === 'trap' || e.type === 'spinner') && !e.isDetected).forEach(ent => {
-				if (Math.hypot(ent.x - player.x, ent.y - player.y) <= 2) {
-					let bestDex = party.reduce((max, p) => Math.max(max, getStat(p, 'DEX')), 0);
-					if (Math.random() * 100 < (bestDex * 3)) { 
-						ent.isDetected = true;
-						window.playSfx('secret_discovery.ogg'); // 🌟 TRAP DETECTION SFX
-						logMsg(`<span style="color:#635725;">You've spotted a hidden ${ent.type.replace('_', ' ')} nearby!</span>`);
-					}
-				}
-			});
+            // 🌟 DETECTION: Detect Traps AND Spinners within 2 tiles (EXCLUDE Darkness, Silence, Anti-Magic)
+            entities.filter(e => (e.type === 'trap' || e.type === 'spinner') && !e.isDetected).forEach(ent => {
+                if (Math.hypot(ent.x - player.x, ent.y - player.y) <= 2) {
+                    let bestDex = party.reduce((max, p) => Math.max(max, getStat(p, 'DEX')), 0);
+                    if (Math.random() * 100 < (bestDex * 3)) { 
+                        ent.isDetected = true;
+                        window.playSfx('secret_discovery.ogg'); // 🌟 TRAP DETECTION SFX
+                        logMsg(`<span style="color:#635725;">You've spotted a hidden ${ent.type.replace('_', ' ')} nearby!</span>`);
+                    }
+                }
+            });
 
-			// Trigger Anti-Magic / Silence / Darkness on Arrival
-			entities.filter(e => 
-				(e.type === 'darkness' || e.type === 'anti_magic' || e.type === 'silence') && 
-				!e.isDetected && e.x === player.x && e.y === player.y
-			).forEach(ent => {
-				ent.isDetected = true;
-				let typeName = ent.type.replace('_', '-');
-				logMsg(`<span style="color:#aa44ff; font-weight:bold;">You have stumbled into a zone of ${typeName}!</span>`);
+            // Trigger Anti-Magic / Silence / Darkness on Arrival
+            entities.filter(e => 
+                (e.type === 'darkness' || e.type === 'anti_magic' || e.type === 'silence') && 
+                !e.isDetected && e.x === player.x && e.y === player.y
+            ).forEach(ent => {
+                ent.isDetected = true;
+                let typeName = ent.type.replace('_', '-');
+                logMsg(`<span style="color:#aa44ff; font-weight:bold;">You have stumbled into a zone of ${typeName}!</span>`);
 
-				// Trigger zone effects immediately
-				window.checkZoneEffects();
-			});
+                // Trigger zone effects immediately
+                window.checkZoneEffects();
+            });
 
             // 🌟 TRAP TRIGGER LOGIC
             let trapOnTile = entities.find(e => e.type === 'trap' && e.x === player.x && e.y === player.y && e.state !== 'disarmed');
 
-			if (trapOnTile) {
-				logMsg(`<span style="color:#aa0000; font-weight:bold;">YOU TRIGGERED A TRAP!</span>`);
-				let victimIdx = party.findIndex(p => p.name !== "Empty" && p.hp > 0);
-				window.triggerChestTrap(trapOnTile.trapLevel, victimIdx);
+            if (trapOnTile) {
+                logMsg(`<span style="color:#aa0000; font-weight:bold;">YOU TRIGGERED A TRAP!</span>`);
+                let victimIdx = party.findIndex(p => p.name !== "Empty" && p.hp > 0);
+                window.triggerChestTrap(trapOnTile.trapLevel, victimIdx);
 
-				// Set to triggered so it doesn't fire again if you walk off and back on
-				trapOnTile.state = 'triggered'; 
-			}
+                // Set to triggered so it doesn't fire again if you walk off and back on
+                trapOnTile.state = 'triggered'; 
+            }
 
-			let teleporter = entities.find(e => e.type === 'teleporter' && e.x === player.x && e.y === player.y);
-			if (teleporter) {
-				if (!teleporter.isDetected) {
-					logMsg(`<span style="color:#017070; font-weight:bold;">You stepped onto a hidden teleporter!</span>`);
-					teleporter.isDetected = true;
-				}
+            let teleporter = entities.find(e => e.type === 'teleporter' && e.x === player.x && e.y === player.y);
+            if (teleporter) {
+                if (!teleporter.isDetected) {
+                    logMsg(`<span style="color:#017070; font-weight:bold;">You stepped onto a hidden teleporter!</span>`);
+                    teleporter.isDetected = true;
+                }
 
                 if (teleporter.targetMap) {
                      logMsg("The air shimmers... you are teleported to a new level!");
@@ -4536,27 +4595,27 @@ function move(direction) {
                      player.y = teleporter.destY;
                      logMsg("The air shimmers... you are teleported!");
                 }
-			}
+            }
 
-			let trapDoor = entities.find(e => e.type === 'trap_door' && e.x === player.x && e.y === player.y);
-			if (trapDoor) {
-				if (!trapDoor.isDetected) {
-					logMsg(`<span style="color:#aa0000; font-weight:bold;">YOU STEPPED ON A TRAP DOOR!</span>`);
-					trapDoor.isDetected = true;
-				} else {
-					logMsg("You step onto the trap door...");
-				}
+            let trapDoor = entities.find(e => e.type === 'trap_door' && e.x === player.x && e.y === player.y);
+            if (trapDoor) {
+                if (!trapDoor.isDetected) {
+                    logMsg(`<span style="color:#aa0000; font-weight:bold;">YOU STEPPED ON A TRAP DOOR!</span>`);
+                    trapDoor.isDetected = true;
+                } else {
+                    logMsg("You step onto the trap door...");
+                }
 
-				// 🌟 UPDATED: Check for Levitation
-				if (window.isPartyLevitating()) {
-					logMsg("<span style='color:#4488ff;'>Your party levitates safely over the trap door!</span>");
-				} else {
-					// Auto-transition after a short delay
-					setTimeout(() => { 
-						loadMap(trapDoor.targetMap, trapDoor.spawnX, trapDoor.spawnY, trapDoor.spawnDir); 
-					}, 500);
-				}
-			}
+                // 🌟 UPDATED: Check for Levitation
+                if (window.isPartyLevitating()) {
+                    logMsg("<span style='color:#4488ff;'>Your party levitates safely over the trap door!</span>");
+                } else {
+                    // Auto-transition after a short delay
+                    setTimeout(() => { 
+                        loadMap(trapDoor.targetMap, trapDoor.spawnX, trapDoor.spawnY, trapDoor.spawnDir); 
+                    }, 500);
+                }
+            }
 
             // Update global state and level
             dungeonLevel = window.getDynamicLevel();
@@ -8193,7 +8252,7 @@ window.renderShopMenu = function() {
             if (!item) return;
 
             if (!shopAcceptsItem(activeShop.shopType, item)) return;
-            if (currentInvTab !== 'All' && item.tab !== currentInvTab) return;
+            if (currentShopTab !== 'All' && item.tab !== currentShopTab) return; // 🌟 FIXED: Used currentShopTab instead of currentInvTab
             itemsShown++;
 
             let qty = typeof invObj === 'object' ? invObj.qty : 1;
@@ -9727,16 +9786,15 @@ window.launchGame = async function(mode) {
         player.x = 19; player.y = 11; player.dir = 1;
         sharedGold = 1000;
     } else {
-        // 🌟 DEFAULT TO VAULTS (FIXED: Safely mutating globals without shadowing them)
         currentMapId = "vaults_1";
         player.x = 7; 
         player.y = 19; 
         player.dir = 0;
 		
-		//currentMapId = "white_palace_5";
-        //player.x = 23; 
-        //player.y = 29; 
-        //player.dir = 0;
+		//currentMapId = "the_lair_1";
+        //player.x = 3; 
+        //player.y = 13; 
+        //player.dir = 2;
 
         let newParty = window.generateRandomParty();
         newParty.forEach(p => party.push(p));

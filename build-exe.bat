@@ -28,11 +28,23 @@ call npm install
 echo.
 echo [STEP 3/3] Compiling your game into an EXE...
 call npm run build
+ren dist\win-unpacked "Curse of the Lyre-Wight"
+copy "CREDITS.txt" "dist\Curse of the Lyre-Wight"
+copy "LICENSE.txt" "dist\Curse of the Lyre-Wight"
+cd dist
+tar -caf "..\Curse of the Lyre-Wight-Win.zip" "Curse of the Lyre-Wight"
+move /Y "..\Curse of the Lyre-Wight-Win.zip" P:\lyrewight1
+cd ..
+rd /S /Q dist
+tar -caf lyrewight_latest.zip "assets" "css" "data" "js" "index.html" "sw.js" "CREDITS.txt" "LICENSE.txt" "main.js" "manifest.json"
+move /Y lyrewight_latest.zip P:\lyrewight1
+cd ..
+robocopy src C:\Lyre-Wight-Build\src /E /XO /COPY:DT
 
 :: 5. Done
 echo.
 echo ===================================================
 echo SUCCESS! Your EXE has been created.
-echo Look inside the new "dist" folder.
+echo zip files created and dist folder deleted.
 echo ===================================================
 pause
