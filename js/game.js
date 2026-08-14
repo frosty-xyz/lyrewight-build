@@ -9791,9 +9791,9 @@ window.launchGame = async function(mode) {
         player.y = 19; 
         player.dir = 0;
 		
-		//currentMapId = "the_lair_1";
-        //player.x = 3; 
-        //player.y = 13; 
+		//currentMapId = "the_lair_3";
+        //player.x = 4; 
+        //player.y = 5; 
         //player.dir = 2;
 
         let newParty = window.generateRandomParty();

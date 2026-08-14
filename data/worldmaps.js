@@ -7354,7 +7354,7 @@ const worldMaps = {
         map: [],
         doors: [],
         entities: [
-    {"x":1,"y":0,"wallX":1,"wallY":0,"type":"dungeon_gate","desc":"the black gate to Requiem","targetMap":"requiem","spawnX":16,"spawnY":24,"spawnDir":3,"gateType":"j","name":"Requiem"},
+    {"x":1,"y":0,"wallX":1,"wallY":0,"type":"dungeon_gate","desc":"the black gate to Requiem","targetMap":"requiem","spawnX":15,"spawnY":25,"spawnDir":3,"gateType":"j","name":"Requiem"},
     {"x":23,"y":23,"wallX":23,"wallY":23,"type":"dungeon_gate","desc":"a staircase leading down to the Tin Mines","targetMap":"the_lair_2","spawnX":1,"spawnY":24,"spawnDir":0,"gateType":"aa","name":"Staircase down"},
     {"x":23,"y":1,"wallX":23,"wallY":1,"type":"dungeon_gate","desc":"a staircase leading up to the Tower Entrance","targetMap":"the_lair_4","spawnX":1,"spawnY":2,"spawnDir":2,"gateType":"bb","name":"Staircase up"},
     {"x":17,"y":1,"type":"trap","trapLevel":10,"isDetected":false},
