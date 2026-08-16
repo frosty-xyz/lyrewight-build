@@ -19,8 +19,7 @@
     },
     "mac": {
       "target": [
-        "dmg",
-        "zip"
+        "dmg"
       ],
       "icon": "assets/icons/icon-512x512.png",
       "artifactName": "Curse of the Lyre-Wight-macOS.${ext}"
