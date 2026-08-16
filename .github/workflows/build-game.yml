@@ -7,9 +7,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  # --- MAC BUILD JOB ---
-  build-mac:
-    runs-on: macos-latest
+  build-apps:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            build-script: build-mac
+            artifact-path: dist/Curse of the Lyre-Wight-macOS.dmg
+          - os: ubuntu-latest
+            build-script: build-linux
+            artifact-path: dist/Curse of the Lyre-Wight-Linux.AppImage
+
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -22,39 +31,38 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Build Mac App
-      run: npm run build-mac -- --publish never
+    - name: Build App
+      run: npm run ${{ matrix.build-script }} -- --publish never
 
-    - name: Upload Mac Build
+    # Temporarily save the single raw installer file
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: lyre-wight-mac-build
-        path: dist/Curse of the Lyre-Wight-macOS.dmg
-        # Stops GitHub from forcing it into an archive wrapper
+        name: build-${{ matrix.os }}
+        path: ${{ matrix.artifact-path }}
         compression-level: 0
 
-  # --- LINUX BUILD JOB ---
-  build-linux:
+  # --- RELEASE JOB ---
+  publish-release:
+    needs: build-apps
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Allows the script to create a release
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
       with:
-        node-version: 20
+        path: release-files
+        merge-multiple: true # Merges files into a single flat directory
 
-    - name: Install dependencies
-      run: npm install
-
-    - name: Build Linux App
-      run: npm run build-linux -- --publish never
-
-    - name: Upload Linux Build
-      uses: actions/upload-artifact@v4
+    # Creates a Draft Release with direct, raw unzipped downloads
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
       with:
-        name: lyre-wight-linux-build
-        path: dist/Curse of the Lyre-Wight-Linux.AppImage
-        # Stops GitHub from forcing it into an archive wrapper
-        compression-level: 0
+        tag_name: v1.1.3-${{ github.run_number }}
+        name: Release v1.1.3 Build #${{ github.run_number }}
+        draft: true
+        prerelease: false
+        files: |
+          release-files/Curse of the Lyre-Wight-macOS.dmg
+          release-files/Curse of the Lyre-Wight-Linux.AppImage
