@@ -1,5 +1,5 @@
 // js/game.js
-window.DEBUG_START_LEVEL = 1;
+window.DEBUG_START_LEVEL = 2;
 document.getElementById('ui-version-tag').innerText = "v" + GAME_VERSION;
 document.getElementById('start-version-tag').innerText = "v" + GAME_VERSION;
 
@@ -2464,7 +2464,6 @@ window.castExploreSpell = function(spellId, casterIndex, targetAllyIndex, mode) 
     }
 };
 
-
 window.showGemPicker = function(spellId, casterIndex, mode) {
     let spell = spellDB[spellId];
     let caster = party[casterIndex];
@@ -2493,8 +2492,13 @@ window.showGemPicker = function(spellId, casterIndex, mode) {
                 btn.style.border = '1px solid rgba(139, 69, 19, 0.3)';
 
                 let titleColor = canAfford ? '#0044aa' : '#777';
+
+                // 🌟 FIX: Route the gem icon through the Texture Atlas engine!
+                let iconFile = iData.icon || iData.iconM;
+                let iconPath = window.getSpriteDataUrl(iconFile);
+
                 btn.innerHTML = `<div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="sm-item-icon" style="background-image:url('assets/${iData.icon || iData.iconM}?v=${GAME_VERSION}'); border-radius: 4px; border: 1px solid #5a2e0e; width: 32px; height: 32px;"></div>
+                    <div class="sm-item-icon" style="background-image:url('${iconPath}'); border-radius: 4px; border: 1px solid #5a2e0e; width: 32px; height: 32px;"></div>
                     <div style="display: flex; flex-direction: column;">
                         <div style="font-size:1.2rem; color:${titleColor}; font-weight:bold;">${iData.name}</div>
                         <div style="font-size:0.9rem; color:#5a2e0e;">Summons Lvl ${gemLevel} Creature</div>
@@ -2543,6 +2547,7 @@ window.showGemPicker = function(spellId, casterIndex, mode) {
 
     document.getElementById('spellbook-modal').style.display = 'flex';
 };
+
 
 function updateCombatUI() {
     if (window.gameState !== 'COMBAT') return;
@@ -5980,13 +5985,12 @@ window.openQuestModal = function(invIdx, fromQuestInv = false) {
     document.getElementById('im-drop-zone').style.display = 'none';
 };
 
-
 function openCharSheet(index) {
     activeModalCharIndex = index;
     let c = party[index];
     if (!c || c.name === "Empty") return;
 
-    // 🌟 LOGIC: Display format for summons vs. party members
+    // 🌟 PATCH: Added strict safety check for enemyData to prevent crashes on dead/summoned units
     let displayName = c.name;
     if (c.isSummon && c.enemyData && c.name !== c.enemyData.name) {
         displayName = `${c.name} (${c.enemyData.name})`;
@@ -5995,8 +5999,8 @@ function openCharSheet(index) {
     document.getElementById('cs-name').innerText = displayName;    
 
     // Prepare arguments for showClassInfo
-    const lookupName = c.isSummon ? `'${c.enemyData.name}'` : 'null';
-    const displayArg = `'${displayName}'`;
+    const lookupName = (c.isSummon && c.enemyData) ? `'${c.enemyData.name}'` : 'null';
+    const displayArg = `'${displayName.replace(/'/g, "\\'")}'`;
 
     let raceDisplay = c.race.charAt(0).toUpperCase() + c.race.slice(1);
     document.getElementById('cs-subtitle').innerHTML = `Level ${c.level} <span style="cursor: pointer; color: #0044aa; border-bottom: 1px dashed #0044aa;" onclick="window.showClassInfo('${c.race}', '${c.class}', ${lookupName}, ${displayArg})">${raceDisplay} ${c.class} ℹ️</span>`;
@@ -6497,6 +6501,8 @@ function openCharSheet(index) {
 
     document.getElementById('char-modal').style.display = 'flex';
 }
+
+
 
 // ==========================================
 // 🎵 MASTER AUDIO & BGM ENGINE

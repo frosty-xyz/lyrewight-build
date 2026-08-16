@@ -25,15 +25,19 @@ jobs:
     - name: Build Mac App
       run: npm run build-mac -- --publish never
 
+    # Rename the file to your exact requested name
+    - name: Rename Mac Installer
+      run: mv dist/*.dmg dist/Curse of the Lyre-Wight-macOS.dmg
+
     - name: Upload Mac Build
       uses: actions/upload-artifact@v4
       with:
         name: lyre-wight-mac-build
-        path: dist/*.dmg
+        path: dist/Curse of the Lyre-Wight-macOS.dmg
 
   # --- LINUX BUILD JOB ---
   build-linux:
-    runs-on: ubuntu-latest  # Runs on a clean Linux virtual environment
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -47,10 +51,14 @@ jobs:
       run: npm install
 
     - name: Build Linux App
-      run: npm run build-linux -- --publish never  # Calls your package.json script
+      run: npm run build-linux -- --publish never
+
+    # Rename the file to your exact requested name
+    - name: Rename Linux Installer
+      run: mv dist/*.AppImage dist/Curse of the Lyre-Wight-Linux.AppImage
 
     - name: Upload Linux Build
       uses: actions/upload-artifact@v4
       with:
         name: lyre-wight-linux-build
-        path: dist/*.AppImage  # Captures the portable AppImage file
+        path: dist/Curse of the Lyre-Wight-Linux.AppImage

@@ -5,11 +5,14 @@ echo     Curse of the Lyre-Wight Windows EXE Builder
 echo ===================================================
 echo.
 
+:: FORCE CONTEXT TO THE SCRIPT'S DIRECTORY
+cd /d "%~dp0"
+
 :: 1. Check if Node.js is installed
 where node >nul 2>nul
 if %errorlevel% neq 0 (
     echo [ERROR] Node.js is not installed!
-    echo Please download and install it from https://nodejs.org/
+    echo Please download and install it from https://nodejs.org
     echo.
     pause
     exit /b
@@ -18,16 +21,19 @@ if %errorlevel% neq 0 (
 :: 2. Clean up build artifacts safely
 echo [STEP 1/3] Cleaning up build and dist directories...
 if exist dist rd /s /q dist
-if exist "%~dp0build" rd /s /q "%~dp0build"
+if exist build rd /s /q build
 
 :: 3. Install required packaging tools
 echo [STEP 2/3] Installing/Updating packaging tools...
-call npm install
+:: --no-audit speeds up local builds safely
+call npm install --no-audit
 
 :: 4. Package the game into an EXE
 echo.
 echo [STEP 3/3] Compiling your game into an EXE...
-call npm run build
+:: npx forces Windows to look inside your fresh node_modules folder
+call npx electron-builder --win --x64
+
 ren dist\win-unpacked "Curse of the Lyre-Wight"
 copy "CREDITS.txt" "dist\Curse of the Lyre-Wight"
 copy "LICENSE.txt" "dist\Curse of the Lyre-Wight"
