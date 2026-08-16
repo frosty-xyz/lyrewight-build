@@ -22,13 +22,15 @@
         "dmg",
         "zip"
       ],
-      "icon": "assets/icons/icon-512x512.png"
+      "icon": "assets/icons/icon-512x512.png",
+      "artifactName": "Curse of the Lyre-Wight-macOS.${ext}"
     },
     "linux": {
       "target": [
         "AppImage"
       ],
-      "category": "Game"
+      "category": "Game",
+      "artifactName": "Curse of the Lyre-Wight-Linux.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -46,9 +48,4 @@
       "!build-exe.bat",
       "!build-mac.bat"
     ]
-  },
-  "devDependencies": {
-    "electron": "^43.4.0",
-    "electron-builder": "^26.15.3"
   }
-}
