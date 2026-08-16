@@ -1,7 +1,7 @@
 {
   "name": "lyre-wight",
   "productName": "Curse of the Lyre-Wight",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "author": "Toni Kuusela",
   "description": "A Retro Dungeon Crawler",
   "main": "main.js",
@@ -10,7 +10,7 @@
     "build": "electron-builder --win --x64",
     "build-mac": "electron-builder --mac",
     "build-linux": "electron-builder --linux"
-	},
+  },
   "build": {
     "appId": "com.lyrewight.game",
     "win": {
@@ -48,7 +48,7 @@
     ]
   },
   "devDependencies": {
-    "electron": "^29.0.0",
-    "electron-builder": "^24.13.3"
+    "electron": "^43.4.0",
+    "electron-builder": "^26.15.3"
   }
 }

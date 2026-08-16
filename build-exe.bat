@@ -15,10 +15,10 @@ if %errorlevel% neq 0 (
     exit /b
 )
 
-:: 2. Clean up build artifacts (including the cache folder "build")
+:: 2. Clean up build artifacts safely
 echo [STEP 1/3] Cleaning up build and dist directories...
 if exist dist rd /s /q dist
-if exist build rd /s /q build
+if exist "%~dp0build" rd /s /q "%~dp0build"
 
 :: 3. Install required packaging tools
 echo [STEP 2/3] Installing/Updating packaging tools...
