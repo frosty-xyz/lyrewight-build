@@ -1,5 +1,5 @@
 // js/game.js
-window.DEBUG_START_LEVEL = 2;
+window.DEBUG_START_LEVEL = 1;
 document.getElementById('ui-version-tag').innerText = "v" + GAME_VERSION;
 document.getElementById('start-version-tag').innerText = "v" + GAME_VERSION;
 

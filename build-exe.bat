@@ -32,7 +32,7 @@ call npm install --no-audit
 echo.
 echo [STEP 3/3] Compiling your game into an EXE...
 :: npx forces Windows to look inside your fresh node_modules folder
-call npx electron-builder --win --x64
+call npx electron-builder --win --x64 -c.electronVersion=43.4.0
 
 ren dist\win-unpacked "Curse of the Lyre-Wight"
 copy "CREDITS.txt" "dist\Curse of the Lyre-Wight"
@@ -45,7 +45,7 @@ rd /S /Q dist
 tar -caf lyrewight_latest.zip "assets" "css" "data" "js" "index.html" "sw.js" "CREDITS.txt" "LICENSE.txt" "main.js" "manifest.json"
 move /Y lyrewight_latest.zip P:\lyrewight1
 cd ..
-robocopy src C:\Lyre-Wight-Build\src /E /XO /COPY:DT
+robocopy src C:\Lyre-Wight-Build\src /E /XO /COPY:DT /XD node_modules
 
 :: 5. Done
 echo.
