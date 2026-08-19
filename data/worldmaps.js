@@ -732,7 +732,7 @@ const worldMaps = {
     {"x":50,"y":25,"type":"message","msgType":"inscription","desc":"A mural inscription hanging on the wall.","content":"\"The Void didn't destroy her but made her stronger.\"","part":3,"of":5,"isDetected":false},
     {"x":30,"y":50,"type":"message","msgType":"inscription","desc":"A mural inscription hanging on the wall.","content":"\"The Bronze Chamber will amplify her voice across the realm.\"","part":4,"of":5,"isDetected":false},
     {"x":14,"y":40,"type":"message","msgType":"inscription","desc":"A mural inscription hanging on the wall.","content":"\"Only if the Silent Chord is played, the world will be at peace.\"","part":5,"of":5,"isDetected":false},
-    {"x":16,"y":25,"wallX":16,"wallY":25,"type":"dungeon_gate","gateType":"j","name":"Mysterious Gate","desc":"a mysterious black gate","targetMap":"the_lair_3","spawnX":1,"spawnY":1}
+    {"x":16,"y":25,"wallX":16,"wallY":25,"type":"dungeon_gate","gateType":"j","name":"Mysterious Gate","desc":"a mysterious black gate","targetMap":"the_lair_3","spawnX":1,"spawnY":1, "spawnDir":2}
 ]
     },
 

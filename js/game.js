@@ -1412,6 +1412,10 @@ function initCombat(enemyName = null, customName = null, overrideEnemies = null,
     } else {
         if (encounterType === 'ambush') { window.combatState.isAmbush = true; window.combatState.isSurprise = false; }
         else if (encounterType === 'surprise') { window.combatState.isAmbush = false; window.combatState.isSurprise = true; }
+        else if (encounterType === 'guarded' || encounterType === 'final_battle') { 
+            window.combatState.isAmbush = false; 
+            window.combatState.isSurprise = false; 
+        }
         else {
             let rand = Math.random();
             window.combatState.isAmbush = rand < 0.20;
@@ -1440,7 +1444,7 @@ function initCombat(enemyName = null, customName = null, overrideEnemies = null,
                         mp: enemyMp,
                         maxMp: enemyMp,
                         distance: Math.floor(Math.random() * (data.startRank[1] - data.startRank[0] + 1)) + data.startRank[0],
-                        ailments: [] // 🌟 FIXED: Ensures array exists right at spawn!
+                        ailments: [] 
                     });
                 }
             }
@@ -1472,7 +1476,7 @@ function initCombat(enemyName = null, customName = null, overrideEnemies = null,
                 mp: enemyMp,
                 maxMp: enemyMp,
                 distance: Math.floor(Math.random() * (eData.startRank[1] - eData.startRank[0] + 1)) + eData.startRank[0],
-                ailments: [] // 🌟 FIXED: Ensures array exists right at spawn!
+                ailments: [] 
             });
         }
     }
@@ -1481,15 +1485,14 @@ function initCombat(enemyName = null, customName = null, overrideEnemies = null,
     window.fadeOutBgm();
 
     // 3. UI Setup
-	let pDiv = document.getElementById('pre-combat-portrait');
-	let pStr = window.combatState.enemies[0].portrait.replace('.png', '.webp');
+    let pDiv = document.getElementById('pre-combat-portrait');
+    let pStr = window.combatState.enemies[0].portrait.replace('.png', '.webp');
 
-	// 🌟 FIX: Convert atlas portrait to DataURL
-	let pUrl = window.getSpriteDataUrl(pStr);
-	pDiv.style.backgroundImage = `url('${pUrl}')`;
-	pDiv.style.backgroundSize = 'contain';
-	pDiv.style.backgroundPosition = 'center bottom';
-	pDiv.style.backgroundRepeat = 'no-repeat';
+    let pUrl = window.getSpriteDataUrl(pStr);
+    pDiv.style.backgroundImage = `url('${pUrl}')`;
+    pDiv.style.backgroundSize = 'contain';
+    pDiv.style.backgroundPosition = 'center bottom';
+    pDiv.style.backgroundRepeat = 'no-repeat';
 
     let typeCounts = {};
     window.combatState.enemies.forEach(e => {
@@ -1504,7 +1507,6 @@ function initCombat(enemyName = null, customName = null, overrideEnemies = null,
         countStrings.push(`${count > 1 ? count + ' ' : ''}${pluralName}`);
     }
 
-    // 🌟 DYNAMIC TEXT LOGIC
     let encounterText = `${window.combatState.isAmbush ? "Ambushed by " : (window.combatState.isSurprise ? "Surprised " : "Encountered ")}${countStrings.join(", ")}!`;
     if (encounterType === 'final_battle') encounterText = "The Lyre-Wight appears!";
 
@@ -1515,7 +1517,6 @@ function initCombat(enemyName = null, customName = null, overrideEnemies = null,
     let btnStart = document.getElementById('btn-start-combat');
 
     // 🌟 BUG FIX: Clear any lingering click handlers from Dungeon Guardians or Gatekeepers!
-    // If these are left on, they will aggressively force the game into combat when clicked.
     btnFlee.onclick = null;
     btnStart.onclick = null;
 
@@ -1523,18 +1524,17 @@ function initCombat(enemyName = null, customName = null, overrideEnemies = null,
     if (encounterType === 'final_battle') {
         window.isFinalBattlePending = true;
         btnFlee.style.display = 'none';
-        btnStart.style.gridColumn = 'span 2'; // Ensure it spans full width
+        btnStart.style.gridColumn = 'span 2'; 
+        btnStart.innerText = "⚔️ Engage"; 
     } else {
         window.isFinalBattlePending = false;
-        btnStart.style.gridColumn = ''; // Revert to normal layout safely
+        btnStart.style.gridColumn = ''; 
 
         let isAmbush = window.combatState.isAmbush && !window.TEST_MODE_ALWAYS_ENABLE_FLEE;
-        if (window.isGuardianEncounter || window.activeGatekeeperId) {
-            btnFlee.style.display = 'block';
-            btnFlee.innerText = "🏃 Retreat";
-            btnStart.innerText = window.activeGatekeeperId ? `⚔️ Fight ${worldMaps[window.activeGatekeeperId].gatekeeperName}` : "⚔️ Engage";
-        } else if (isAmbush) {
+
+        if (isAmbush) {
             btnFlee.style.display = 'none';
+            btnStart.innerText = "⚔️ Engage"; // 🌟 FIX: Clean text for random ambushes
         } else {
             btnFlee.style.display = 'block';
             btnFlee.innerText = "🏃‍♂️ Avoid";
@@ -6372,16 +6372,28 @@ function openCharSheet(index) {
         sharedInventory.forEach((item, idx) => {
             if (!item || item.isQuestItem) return;
             let iData = itemDB[typeof item === 'string' ? item : item.id];
-            if (iData && (currentInvTab === 'All' || iData.tab === currentInvTab) && (currentInvSubTab === 'All' || iData.subType === currentInvSubTab)) {
+
+            // 🌟 FIXED: Added condition to properly show Rings since they use 'slot' instead of 'subType'
+            let matchesTab = (currentInvTab === 'All' || iData.tab === currentInvTab);
+            let matchesSub = (currentInvSubTab === 'All' || iData.subType === currentInvSubTab || (currentInvSubTab === 'Ring' && iData.slot === 'Ring'));
+
+            if (iData && matchesTab && matchesSub) {
                 invHtml += buildItemSlot(item, 'EMPTY', `equip:${idx}`);
             }
         });
         if (currentInvTab !== 'All') { for(let i=0; i<80; i++) invHtml += `<div class="item-slot empty"></div>`; }
     }
+
     document.getElementById('cs-inv').innerHTML = invHtml;
+
+    // 🌟 ITEM COUNT LOGIC
+    let usedSlots = sharedInventory.filter(item => item !== null && !item.isQuestItem).length;
+    let countEl = document.getElementById('cs-item-count');
+    if (countEl) countEl.innerText = `Items: ${usedSlots} / 100`;
+
     let goldEl = document.getElementById('cs-gold');
     goldEl.innerText = `Party Gold: ${sharedGold}`;
-    goldEl.style.marginLeft = 'auto'; 
+    goldEl.style.marginLeft = '0'; // Let the flex wrapper handle alignment
 
 	// UI ACTIVE EFFECTS SCANNER
     let effectCategories = {
@@ -7643,6 +7655,12 @@ window.renderShopMenu = function() {
     }
 
     document.getElementById('sm-gold').innerText = sharedGold;
+
+    // 🌟 NEW: Item Count logic for Shop
+    let usedSlots = sharedInventory.filter(item => item !== null && !item.isQuestItem).length;
+    let smCountEl = document.getElementById('sm-item-count');
+    if (smCountEl) smCountEl.innerText = `Items: ${usedSlots} / 100`;
+
     let grid = document.getElementById('sm-grid');
     grid.innerHTML = '';
 
@@ -8925,7 +8943,6 @@ window.tryTriggerGuardedEntrance = function(ent) {
     const tId = ent.targetMap;
     const cfg = worldMaps[tId];
 
-    // 🌟 UPDATED: Only trigger guardian if we are coming from the wilderness!
     const isGuardian = cfg && cfg.theme === 'dungeon' && !window.dungeonGuardians[tId]?.defeated && worldMaps[currentMapId].theme === 'wilderness';
     const isGatekeeper = cfg && cfg.theme === 'town' && cfg.gatekeeper && !window.townGatekeepersDefeated.includes(tId);
 
@@ -8939,18 +8956,19 @@ window.tryTriggerGuardedEntrance = function(ent) {
     let enemyName = isGuardian ? window.dungeonGuardians[tId]?.data.name : cfg.gatekeeper;
     let customName = isGatekeeper ? cfg.gatekeeperName : null; 
 
+    // 🌟 FIX: Pass 'guarded' to explicitly block random ambushes
     if (isGuardian && !window.dungeonGuardians[tId]) {
         let guardianLvl = (cfg.level || 1) + 2;
         let candidates = enemyBestiary.filter(e => e.level === guardianLvl);
         if (candidates.length === 0) candidates = enemyBestiary;
         let data = candidates[Math.floor(Math.random() * candidates.length)];
-        initCombat(data.name);
+        initCombat(data.name, null, null, 'guarded');
         window.dungeonGuardians[tId] = { data, horde: [...window.combatState.enemies], defeated: false };
     } else if (isGuardian) {
         window.combatState.enemies = [...window.dungeonGuardians[tId].horde];
-        initCombat(window.dungeonGuardians[tId].data.name);
+        initCombat(window.dungeonGuardians[tId].data.name, null, null, 'guarded');
     } else {
-        initCombat(enemyName, customName); 
+        initCombat(enemyName, customName, null, 'guarded'); 
     }
 
     window.activeGuardianId = isGuardian ? tId : null;
@@ -8969,6 +8987,7 @@ window.tryTriggerGuardedEntrance = function(ent) {
     let btnFlee = document.getElementById('btn-pre-flee');
     let btnFight = document.getElementById('btn-start-combat');
 
+    // 🌟 FIX: We can safely override the text here because initCombat no longer touches the global flags
     btnFlee.innerText = "🏃 Retreat";
     btnFight.innerText = isGatekeeper ? `⚔️ Fight ${cfg.gatekeeperName}` : "⚔️ Engage";
 
@@ -8976,7 +8995,7 @@ window.tryTriggerGuardedEntrance = function(ent) {
         window.gameState = 'EXPLORE';
         window.isGuardianEncounter = false;
         window.activeGatekeeperId = null;
-        window.activeGuardianId = null; // 🌟 CLEARED HERE TO PREVENT FALSE VICTORIES ON OTHER FIGHTS
+        window.activeGuardianId = null; 
         window.resumeMapBgm();
         if (window.preCombatPos) { player.x = window.preCombatPos.x; player.y = window.preCombatPos.y; }
         updateUIState();
@@ -8992,7 +9011,6 @@ window.tryTriggerGuardedEntrance = function(ent) {
         window.gameState = 'COMBAT';
         updateUIState();
 
-        // 🌟 DYNAMIC LOG
         if (isGatekeeper) {
              logMsg(`<span class="log-combat">Combat!</span> ${cfg.gatekeeperName} attacks!`);
         } else {
@@ -9434,10 +9452,14 @@ window.executeLoadFromData = async function(rawData, isQuickLoad = false) {
         player.dir = saveData.player.dir;
         sharedGold = saveData.sharedGold;
 
+        // 🌟 FIX: Reset stale encounter flags so you aren't randomly ambushed by Gatekeepers after a reload!
+        window.activeGatekeeperId = null;
+        window.activeGuardianId = null;
+        window.isGuardianEncounter = false;
+
         // 2. Reconstruct arrays
         console.log("Restoring party and inventory...");
 
-        // --- 🌟 QUEST & INVENTORY MIGRATION ENGINE ---
         questInventory.length = 0;
         if (saveData.questInventory) {
             saveData.questInventory.forEach(q => questInventory.push(q));
@@ -9447,14 +9469,12 @@ window.executeLoadFromData = async function(rawData, isQuickLoad = false) {
             let item = (saveData.sharedInventory && saveData.sharedInventory[i]) ? saveData.sharedInventory[i] : null;
             if (item) {
                 if (item.isQuestItem) {
-                    // Prevent duplicate quest items during migration
                     if (!questInventory.some(q => q.title === item.title && q.part === item.part)) {
                         questInventory.push(item);
                     }
-                    item = null; // Free up the slot in sharedInventory
+                    item = null; 
                 } else {
                     let id = typeof item === 'string' ? item : item.id;
-                    // Purge items that no longer exist in the game database
                     if (!itemDB || !itemDB[id]) {
                         item = null;
                     }
@@ -9465,7 +9485,6 @@ window.executeLoadFromData = async function(rawData, isQuickLoad = false) {
 
         party.length = 0; 
         saveData.party.forEach(p => {
-            // 🌟 REPAIR LEGACY SUMMONS MISSING ENEMYDATA
             if (p.isSummon && !p.enemyData && typeof enemyBestiary !== 'undefined') {
                 p.enemyData = enemyBestiary.find(e => e.name === p.name) || 
                               enemyBestiary.find(e => e.level === p.level && e.hpMax === p.maxHp) ||
@@ -9475,7 +9494,6 @@ window.executeLoadFromData = async function(rawData, isQuickLoad = false) {
             party.push(p);
         });
 
-        // Load Settings
         if (saveData.settings) {
             window.applyGraphicsSetting(saveData.settings.graphics, true, false);
             localStorage.setItem('audio_music', saveData.settings.music);
@@ -9487,7 +9505,6 @@ window.executeLoadFromData = async function(rawData, isQuickLoad = false) {
                 window.armFullscreenRestoration();
             }
 
-            // Update UI toggles
             const musicToggle = document.getElementById('music-toggle');
             const sfxToggle = document.getElementById('sfx-toggle');
             const gfxSelect = document.getElementById('graphics-select');
@@ -9499,7 +9516,6 @@ window.executeLoadFromData = async function(rawData, isQuickLoad = false) {
             if (speedSlider) speedSlider.value = 200 - (window.combatSpeedMultiplier * 100);
         }
 
-        // Restore globals
         discoveredMaps = saveData.discoveredMaps || {}; 
         guildRoster = saveData.guildRoster || [];
 
@@ -9569,7 +9585,7 @@ window.executeLoadFromData = async function(rawData, isQuickLoad = false) {
         alert("Failed to load save file. Check console for details.");
         if (loadingOverlay) loadingOverlay.style.display = 'none';
     }
-};
+}
 
 
 window.applyGraphicsSetting = function(qualityLevel, persist = true, shouldUpdate = true) {
@@ -9768,6 +9784,11 @@ window.launchGame = async function(mode) {
     window.gameTurnCounter = 0;
     window.isAnimating = false;
 
+    // 🌟 FIX: Ensure flags are completely wiped so new games start fresh!
+    window.activeGatekeeperId = null;
+    window.activeGuardianId = null;
+    window.isGuardianEncounter = false;
+
     Object.keys(window.activeSpellAudios).forEach(spellId => {
         window.fadeOutAudio(window.activeSpellAudios[spellId]);
         delete window.activeSpellAudios[spellId];
@@ -9785,22 +9806,23 @@ window.launchGame = async function(mode) {
     // 3. Setup Gear and Party
     window.applyStartingGear(mode);
     party.length = 0;
-    questInventory.length = 0; // 🌟 FIX: Also clear quest inventory!
+    questInventory.length = 0; 
 
     if (mode === 'guild') {
         currentMapId = "barrowtown";
         player.x = 19; player.y = 11; player.dir = 1;
         sharedGold = 1000;
     } else {
-        currentMapId = "vaults_1";
+		
+		currentMapId = "vaults_1";
         player.x = 7; 
         player.y = 19; 
         player.dir = 0;
 		
-		//currentMapId = "the_lair_3";
-        //player.x = 4; 
-        //player.y = 5; 
-        //player.dir = 2;
+		//currentMapId = "requiem";
+        //player.x = 14; 
+        //player.y = 25; 
+        //player.dir = 1;
 
         let newParty = window.generateRandomParty();
         newParty.forEach(p => party.push(p));
@@ -9833,7 +9855,7 @@ window.launchGame = async function(mode) {
         if (btnGuild) { btnGuild.disabled = false; btnGuild.innerText = "Start at Guild"; btnGuild.style.display = 'block'; }
         document.getElementById('start-screen').style.display = 'flex';
     }
-};
+}
 
 
 window.playIntroSequence = async function(startMode = 'vaults') {
